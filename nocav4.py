@@ -379,13 +379,128 @@ st.divider()
 
 st.subheader("Development Type")
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    dev_power = st.checkbox("Power")
-with col2:
-    dev_residential = st.checkbox("Residential")
-with col3:
-    dev_commercial = st.checkbox("Commercial")
+# ── Power ──
+dev_power = st.checkbox("Power")
+dev_power_wind = dev_power_solar = dev_power_bess = dev_power_other = False
+dev_power_other_text = ""
+if dev_power:
+    with st.container():
+        st.markdown("<div style='margin-left:20px'>", unsafe_allow_html=True)
+        pc1, pc2, pc3, pc4 = st.columns(4)
+        with pc1:
+            dev_power_wind  = st.checkbox("Wind")
+        with pc2:
+            dev_power_solar = st.checkbox("Solar Photovoltaic")
+        with pc3:
+            dev_power_bess  = st.checkbox("Battery Energy Storage System")
+        with pc4:
+            dev_power_other = st.checkbox("Other (Power)")
+        if dev_power_other:
+            dev_power_other_text = st.text_input("Power — Other (specify)", placeholder="e.g. Geothermal")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# ── Non-Power ──
+dev_nonpower = st.checkbox("Non-Power")
+
+# Initialize all non-power fields
+dev_residential = dev_office = dev_commercial = dev_industrial = False
+dev_educational = dev_recreational = dev_water = dev_transportation = False
+dev_mining = dev_waste = dev_hazardous = dev_other = False
+dev_residential_units = dev_residential_acres = ""
+dev_office_sqft = dev_office_acres = dev_office_emp = ""
+dev_commercial_sqft = dev_commercial_acres = dev_commercial_emp = ""
+dev_industrial_sqft = dev_industrial_acres = dev_industrial_emp = ""
+dev_educational_text = dev_recreational_text = ""
+dev_water_type = dev_water_mgd = ""
+dev_transportation_type = ""
+dev_mining_mineral = ""
+dev_waste_type = dev_waste_mgd = ""
+dev_hazardous_type = ""
+dev_other_text = ""
+
+if dev_nonpower:
+    with st.container():
+        st.markdown("<div style='margin-left:20px'>", unsafe_allow_html=True)
+
+        dev_residential = st.checkbox("Residential")
+        if dev_residential:
+            rc1, rc2 = st.columns(2)
+            with rc1:
+                dev_residential_units = st.text_input("Residential — Units", placeholder="e.g. 250")
+            with rc2:
+                dev_residential_acres = st.text_input("Residential — Acres", placeholder="e.g. 12.5")
+
+        dev_office = st.checkbox("Office")
+        if dev_office:
+            oc1, oc2, oc3 = st.columns(3)
+            with oc1:
+                dev_office_sqft  = st.text_input("Office — Sq. Ft.", placeholder="e.g. 45,000")
+            with oc2:
+                dev_office_acres = st.text_input("Office — Acres", placeholder="e.g. 3.2")
+            with oc3:
+                dev_office_emp   = st.text_input("Office — Employees", placeholder="e.g. 180")
+
+        dev_commercial = st.checkbox("Commercial")
+        if dev_commercial:
+            cc1, cc2, cc3 = st.columns(3)
+            with cc1:
+                dev_commercial_sqft  = st.text_input("Commercial — Sq. Ft.", placeholder="e.g. 20,000")
+            with cc2:
+                dev_commercial_acres = st.text_input("Commercial — Acres", placeholder="e.g. 2.0")
+            with cc3:
+                dev_commercial_emp   = st.text_input("Commercial — Employees", placeholder="e.g. 75")
+
+        dev_industrial = st.checkbox("Industrial")
+        if dev_industrial:
+            ic1, ic2, ic3 = st.columns(3)
+            with ic1:
+                dev_industrial_sqft  = st.text_input("Industrial — Sq. Ft.", placeholder="e.g. 100,000")
+            with ic2:
+                dev_industrial_acres = st.text_input("Industrial — Acres", placeholder="e.g. 8.0")
+            with ic3:
+                dev_industrial_emp   = st.text_input("Industrial — Employees", placeholder="e.g. 50")
+
+        dev_educational = st.checkbox("Educational")
+        if dev_educational:
+            dev_educational_text = st.text_input("Educational — Details", placeholder="e.g. K-12 school, 800 students")
+
+        dev_recreational = st.checkbox("Recreational")
+        if dev_recreational:
+            dev_recreational_text = st.text_input("Recreational — Details", placeholder="e.g. Regional park, sports fields")
+
+        dev_water = st.checkbox("Water Facilities")
+        if dev_water:
+            wc1, wc2 = st.columns(2)
+            with wc1:
+                dev_water_type = st.text_input("Water Facilities — Type", placeholder="e.g. Reservoir, Treatment Plant")
+            with wc2:
+                dev_water_mgd  = st.text_input("Water Facilities — MGD", placeholder="e.g. 5.2")
+
+        dev_transportation = st.checkbox("Transportation")
+        if dev_transportation:
+            dev_transportation_type = st.text_input("Transportation — Type", placeholder="e.g. Highway, Rail, Airport")
+
+        dev_mining = st.checkbox("Mining")
+        if dev_mining:
+            dev_mining_mineral = st.text_input("Mining — Mineral", placeholder="e.g. Silica, Gravel")
+
+        dev_waste = st.checkbox("Waste Treatment")
+        if dev_waste:
+            wt1, wt2 = st.columns(2)
+            with wt1:
+                dev_waste_type = st.text_input("Waste Treatment — Type", placeholder="e.g. Wastewater, Solid Waste")
+            with wt2:
+                dev_waste_mgd  = st.text_input("Waste Treatment — MGD", placeholder="e.g. 2.0")
+
+        dev_hazardous = st.checkbox("Hazardous Waste")
+        if dev_hazardous:
+            dev_hazardous_type = st.text_input("Hazardous Waste — Type", placeholder="e.g. Medical, Chemical")
+
+        dev_other = st.checkbox("Other (Non-Power)")
+        if dev_other:
+            dev_other_text = st.text_input("Other — Details", placeholder="Describe other development type")
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 st.divider()
 
@@ -590,12 +705,51 @@ def generate_pdf():
         add_checked(story, "Local Action Type", lat_items)
 
     # Development Type
-    dev_checked = {"Power": dev_power, "Residential": dev_residential, "Commercial": dev_commercial}
-    if any(dev_checked.values()):
+    has_dev = (dev_power or dev_nonpower)
+    if has_dev:
         story.append(Paragraph("Development Type", heading_style))
         story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
         story.append(Spacer(1, 4))
-        add_checked(story, "Development Type", dev_checked)
+
+    if dev_power:
+        power_subs = {"Wind": dev_power_wind, "Solar Photovoltaic": dev_power_solar,
+                      "Battery Energy Storage System": dev_power_bess}
+        if dev_power_other and dev_power_other_text.strip():
+            power_subs[f"Other: {dev_power_other_text.strip()}"] = True
+        sub_str = checked_list(power_subs) or "—"
+        add_field(story, "Power", sub_str)
+
+    if dev_nonpower:
+        if dev_residential:
+            add_field(story, "Residential",
+                      f"Units: {dev_residential_units or '—'} | Acres: {dev_residential_acres or '—'}")
+        if dev_office:
+            add_field(story, "Office",
+                      f"Sq. Ft.: {dev_office_sqft or '—'} | Acres: {dev_office_acres or '—'} | Employees: {dev_office_emp or '—'}")
+        if dev_commercial:
+            add_field(story, "Commercial",
+                      f"Sq. Ft.: {dev_commercial_sqft or '—'} | Acres: {dev_commercial_acres or '—'} | Employees: {dev_commercial_emp or '—'}")
+        if dev_industrial:
+            add_field(story, "Industrial",
+                      f"Sq. Ft.: {dev_industrial_sqft or '—'} | Acres: {dev_industrial_acres or '—'} | Employees: {dev_industrial_emp or '—'}")
+        if dev_educational:
+            add_field(story, "Educational", dev_educational_text or "—")
+        if dev_recreational:
+            add_field(story, "Recreational", dev_recreational_text or "—")
+        if dev_water:
+            add_field(story, "Water Facilities",
+                      f"Type: {dev_water_type or '—'} | MGD: {dev_water_mgd or '—'}")
+        if dev_transportation:
+            add_field(story, "Transportation", f"Type: {dev_transportation_type or '—'}")
+        if dev_mining:
+            add_field(story, "Mining", f"Mineral: {dev_mining_mineral or '—'}")
+        if dev_waste:
+            add_field(story, "Waste Treatment",
+                      f"Type: {dev_waste_type or '—'} | MGD: {dev_waste_mgd or '—'}")
+        if dev_hazardous:
+            add_field(story, "Hazardous Waste", f"Type: {dev_hazardous_type or '—'}")
+        if dev_other and dev_other_text.strip():
+            add_field(story, "Other", dev_other_text.strip())
 
     # Project Issues
     issues_checked = {
