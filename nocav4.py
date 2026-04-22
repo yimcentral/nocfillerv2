@@ -61,6 +61,153 @@ def preset_val(preset, key, fallback=""):
 # ── Page setup ────────────────────────────────────────────────────────────────
 
 st.set_page_config(page_title="Notice of Completion Generator", layout="centered")
+
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Georgia&display=swap');
+
+/* ── Page background ── */
+.stApp {
+    background-color: #d4dce8;
+    background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='1' height='1' fill='%23b0bccf' fill-opacity='0.18'/%3E%3C/svg%3E");
+}
+
+/* ── Main content wrapper ── */
+.block-container {
+    background-color: #f0f4f8;
+    border: 2px solid #7a92aa;
+    border-top: 4px solid #003366;
+    padding: 18px 28px 28px 28px !important;
+    max-width: 760px !important;
+    box-shadow: 3px 3px 0px #7a92aa, 6px 6px 0px #b0bccf;
+}
+
+/* ── Page title banner ── */
+h1 {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 1.25rem !important;
+    font-weight: bold !important;
+    color: #ffffff !important;
+    background: linear-gradient(180deg, #2a5298 0%, #003366 100%);
+    border: 2px outset #5577aa;
+    padding: 8px 14px !important;
+    margin-bottom: 2px !important;
+    letter-spacing: 0.01em;
+    text-shadow: 1px 1px 2px #001a33;
+}
+
+/* ── Caption / subtitle ── */
+.stCaption, [data-testid="stCaptionContainer"] p {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 0.78rem !important;
+    color: #4a5568 !important;
+    font-style: italic;
+    margin-top: 0px !important;
+    padding-left: 2px;
+}
+
+/* ── Section subheaders ── */
+h2, h3 {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 0.95rem !important;
+    font-weight: bold !important;
+    color: #ffffff !important;
+    background: linear-gradient(180deg, #4a6fa5 0%, #2a4a7f 100%);
+    border: 1px outset #7a92aa;
+    padding: 4px 10px !important;
+    margin-top: 14px !important;
+    margin-bottom: 6px !important;
+    letter-spacing: 0.02em;
+}
+
+/* ── Body text / labels ── */
+label, .stTextInput label, .stSelectbox label,
+.stTextArea label, p, li {
+    font-family: Verdana, Tahoma, Geneva, sans-serif !important;
+    font-size: 0.78rem !important;
+    color: #1a2a3a !important;
+}
+
+/* ── Inputs ── */
+input[type="text"], textarea, select,
+.stTextInput input, .stTextArea textarea {
+    font-family: Verdana, Tahoma, sans-serif !important;
+    font-size: 0.78rem !important;
+    background-color: #fffef5 !important;
+    border: 1px inset #7a92aa !important;
+    color: #1a2a3a !important;
+}
+
+/* ── Selectbox ── */
+.stSelectbox > div > div {
+    background-color: #fffef5 !important;
+    border: 1px inset #7a92aa !important;
+    font-family: Verdana, Tahoma, sans-serif !important;
+    font-size: 0.78rem !important;
+}
+
+/* ── Checkboxes ── */
+.stCheckbox label {
+    font-family: Verdana, Tahoma, sans-serif !important;
+    font-size: 0.78rem !important;
+    color: #1a2a3a !important;
+}
+
+/* ── Dividers ── */
+hr {
+    border: none !important;
+    border-top: 2px inset #7a92aa !important;
+    margin: 10px 0 !important;
+}
+
+/* ── Primary button (Generate PDF) ── */
+.stButton > button[kind="primary"] {
+    font-family: Verdana, Tahoma, sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: bold !important;
+    background: linear-gradient(180deg, #5588bb 0%, #2a5298 100%) !important;
+    color: #ffffff !important;
+    border: 2px outset #7aaad4 !important;
+    border-radius: 2px !important;
+    padding: 6px 18px !important;
+    text-shadow: 1px 1px 1px #001a33;
+    letter-spacing: 0.03em;
+}
+.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(180deg, #6699cc 0%, #3a62a8 100%) !important;
+    border: 2px inset #7aaad4 !important;
+}
+.stButton > button[kind="primary"]:active {
+    border: 2px inset #4a6a94 !important;
+}
+
+/* ── Download button ── */
+.stDownloadButton > button {
+    font-family: Verdana, Tahoma, sans-serif !important;
+    font-size: 0.78rem !important;
+    background: linear-gradient(180deg, #e8f0e8 0%, #c8d8c8 100%) !important;
+    color: #1a3a1a !important;
+    border: 2px outset #88aa88 !important;
+    border-radius: 2px !important;
+}
+
+/* ── Bold markdown labels (CEQA, NEPA, Other) ── */
+strong {
+    font-family: Verdana, Tahoma, sans-serif !important;
+    font-size: 0.8rem !important;
+    color: #003366 !important;
+}
+
+/* ── Success / error messages ── */
+.stSuccess, .stAlert {
+    font-family: Verdana, Tahoma, sans-serif !important;
+    font-size: 0.78rem !important;
+    border: 1px solid #5588bb !important;
+    border-radius: 0px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 st.title("Notice of Completion & Environmental Document Transmittal")
 st.caption("California Energy Commission — ADA-Compliant Form Generator")
 st.divider()
