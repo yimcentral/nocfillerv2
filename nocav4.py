@@ -31,9 +31,13 @@ CONTACTS = {
 
 @st.cache_data
 def load_presets():
+    import pandas as pd
+    ods_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "project_data.ods")
+    if not os.path.exists(ods_path):
+        st.warning(f"project_data.ods not found at: {ods_path}")
+        return {}
     try:
-        import pandas as pd
-        df = pd.read_excel("project_data.ods", engine="odf", dtype=str)
+        df = pd.read_excel(ods_path, engine="odf", dtype=str)
         df = df.fillna("")
         presets = {}
         for _, row in df.iterrows():
@@ -41,15 +45,12 @@ def load_presets():
             if title:
                 presets[title] = row.to_dict()
         return presets
-    except Exception:
+    except Exception as e:
+        st.error(f"Failed to load project_data.ods: {e}")
         return {}
 
 PRESETS = load_presets()
-PROJECT_TITLES = list(PRESETS.keys()) if PRESETS else [
-    "Corby Battery Energy Storage System Project",
-    "Potentia-Viridi Battery Energy Storage System",
-    "Soda Mountain Solar Project",
-]
+PROJECT_TITLES = list(PRESETS.keys()) if PRESETS else []
 
 def preset_val(preset, key, fallback=""):
     if not preset:
