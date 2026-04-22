@@ -66,6 +66,35 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Georgia&display=swap');
 
+/* ── Force light mode everywhere ── */
+html, body, .stApp, [data-testid="stAppViewContainer"],
+[data-testid="stSidebar"], [data-baseweb="select"],
+[data-baseweb="popover"], [role="listbox"], [role="option"],
+[data-baseweb="menu"], [data-baseweb="input"],
+[data-baseweb="textarea"], [data-testid="stForm"] {
+    color-scheme: light !important;
+    background-color: unset;
+}
+
+/* Force all select/dropdown menus to light */
+[data-baseweb="select"] > div,
+[data-baseweb="select"] input,
+[data-baseweb="popover"] > div,
+[role="listbox"],
+[role="option"] {
+    background-color: #fffef5 !important;
+    color: #1a2a3a !important;
+}
+
+[role="option"]:hover {
+    background-color: #ccd8e8 !important;
+    color: #001a33 !important;
+}
+
+/* ── Hide Streamlit chrome ── */
+#MainMenu, header[data-testid="stHeader"], footer { display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
+
 /* ── Page background ── */
 .stApp {
     background-color: #d4dce8;
