@@ -21,17 +21,41 @@ LOGO_PATH = "cec_logo.png"
 # ── Prepopulated data ─────────────────────────────────────────────────────────
 
 CONTACTS = {
-    "Lisa Worrall": "916-555-0101",
+    "Lisa Worrall": "916-661-8367",
     "Eric Veerkamp": "916-555-0202",
-    "Renee Longman": "916-555-0303",
+    "Renee Longman": "916-937-3538",
     "Ali Jahani": "916-555-0404",
 }
 
-PROJECT_TITLES = [
+# ── Load project presets from ODS ─────────────────────────────────────────────
+
+@st.cache_data
+def load_presets():
+    try:
+        import pandas as pd
+        df = pd.read_excel("project_data.ods", engine="odf", dtype=str)
+        df = df.fillna("")
+        presets = {}
+        for _, row in df.iterrows():
+            title = row.get("project_title", "").strip()
+            if title:
+                presets[title] = row.to_dict()
+        return presets
+    except Exception:
+        return {}
+
+PRESETS = load_presets()
+PROJECT_TITLES = list(PRESETS.keys()) if PRESETS else [
     "Corby Battery Energy Storage System Project",
     "Potentia-Viridi Battery Energy Storage System",
     "Soda Mountain Solar Project",
 ]
+
+def preset_val(preset, key, fallback=""):
+    if not preset:
+        return fallback
+    v = preset.get(key, fallback)
+    return str(v).strip() if v and str(v).strip() not in ("nan", "None") else fallback
 
 # ── Page setup ────────────────────────────────────────────────────────────────
 
@@ -45,10 +69,18 @@ st.divider()
 st.subheader("Overview")
 
 project_title = st.selectbox("Project Title", options=[""] + PROJECT_TITLES)
-contact_name = st.selectbox("Contact Person", options=[""] + list(CONTACTS.keys()))
-phone = CONTACTS.get(contact_name, "")
-st.text_input("Phone", value=phone, disabled=True, help="Auto-filled based on contact selection")
-sch_number = st.text_input("SCH Number", placeholder="e.g. 2024010001")
+preset = PRESETS.get(project_title, {})
+
+preset_contact = preset_val(preset, "contact_name")
+contact_options = [""] + list(CONTACTS.keys())
+contact_index = contact_options.index(preset_contact) if preset_contact in contact_options else 0
+contact_name = st.selectbox("Contact Person", options=contact_options, index=contact_index)
+
+preset_phone = preset_val(preset, "phone") or CONTACTS.get(contact_name, "")
+st.text_input("Phone", value=preset_phone, disabled=True, help="Auto-filled based on contact or project selection")
+
+preset_sch = preset_val(preset, "sch_number")
+sch_number = st.text_input("SCH Number", value=preset_sch, placeholder="e.g. 2024010001")
 
 st.divider()
 
