@@ -1083,7 +1083,7 @@ def generate_pdf():
         page_height = float(target_page.mediabox.height)
 
         sig_left = float(anchor["x"])
-        sig_top_from_top = float(anchor["y"]) + 6
+        sig_top_from_top = float(anchor["y"]) + 14
         sig_width = 2.5 * inch
         sig_height = 0.5 * inch
         sig_bottom = page_height - sig_top_from_top - sig_height
