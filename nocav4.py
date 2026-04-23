@@ -373,7 +373,7 @@ contact_options = [""] + list(CONTACTS.keys())
 contact_index = contact_options.index(preset_contact) if preset_contact in contact_options else 0
 contact_name = st.selectbox("Contact Person", options=contact_options, index=contact_index, key="contact_name")
 
-preset_phone = preset_val(preset, "phone") or CONTACTS.get(contact_name, "")
+preset_phone = CONTACTS.get(contact_name, "")
 st.text_input("Phone", value=preset_phone, key="phone_display", disabled=True, help="Auto-filled based on contact or project selection")
 
 preset_sch = preset_val(preset, "sch_number")
