@@ -916,29 +916,10 @@ def generate_pdf():
 
     checked_agencies = [name for name, checked in agency_map.items() if checked]
     if checked_agencies:
-        # Two-column layout using a table for visual alignment, with accessible text
         story.append(Paragraph("Selected Reviewing Agencies:", label_style))
         story.append(Spacer(1, 4))
-        # Split into two columns
-        mid = (len(checked_agencies) + 1) // 2
-        left_col  = checked_agencies[:mid]
-        right_col = checked_agencies[mid:]
-        # Pad right col if shorter
-        while len(right_col) < len(left_col):
-            right_col.append("")
-        agency_table_data = [
-            [Paragraph(f"[X] {l}", value_style), Paragraph(f"[X] {r}" if r else "", value_style)]
-            for l, r in zip(left_col, right_col)
-        ]
-        agency_table = Table(agency_table_data, colWidths=[3.0*inch, 3.0*inch])
-        agency_table.setStyle(TableStyle([
-            ("VALIGN",      (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 2),
-            ("RIGHTPADDING",(0, 0), (-1, -1), 6),
-            ("TOPPADDING",  (0, 0), (-1, -1), 2),
-            ("BOTTOMPADDING",(0,0), (-1, -1), 2),
-        ]))
-        story.append(agency_table)
+        for agency in checked_agencies:
+            story.append(Paragraph(f"[X] {agency}", value_style))
     else:
         story.append(Paragraph("[No reviewing agencies selected]", value_style))
 
