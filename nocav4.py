@@ -532,6 +532,71 @@ project_description = st.text_area("Project Description",
 
 st.divider()
 
+# ── SECTION: Reviewing Agencies Checklist ────────────────────────────────────
+
+st.subheader("Reviewing Agencies Checklist")
+
+col_l, col_r = st.columns(2)
+
+with col_l:
+    ra_air             = st.checkbox("Air Resources Board", value=True)
+    ra_boating         = st.checkbox("Boating & Waterways, Department of", value=False)
+    ra_cal_ema         = st.checkbox("California Emergency Management Agency", value=True)
+    ra_chp             = st.checkbox("California Highway Patrol", value=True)
+    ra_caltrans_dist   = st.checkbox("Caltrans District #n", value=True)
+    ra_caltrans_dist_n = ""
+    if ra_caltrans_dist:
+        ra_caltrans_dist_n = st.text_input("Caltrans District Number", placeholder="e.g. 7")
+    ra_caltrans_aero   = st.checkbox("Caltrans Division of Aeronautics", value=False)
+    ra_caltrans_plan   = st.checkbox("Caltrans Planning", value=True)
+    ra_cvfpb           = st.checkbox("Central Valley Flood Protection Board", value=False)
+    ra_coachella       = st.checkbox("Coachella Valley Mtns. Conservancy", value=False)
+    ra_coastal         = st.checkbox("Coastal Commission", value=False)
+    ra_colorado        = st.checkbox("Colorado River Board", value=False)
+    ra_conservation    = st.checkbox("Conservation, Department of", value=True)
+    ra_corrections     = st.checkbox("Corrections, Department of", value=False)
+    ra_delta           = st.checkbox("Delta Protection Commission", value=False)
+    ra_education       = st.checkbox("Education, Department of", value=False)
+    ra_energy          = st.checkbox("Energy Commission", value=True)
+    ra_fish            = st.checkbox("Fish & Game Region #n", value=True)
+    ra_fish_n = ""
+    if ra_fish:
+        ra_fish_n = st.text_input("Fish & Game Region Number", placeholder="e.g. 4")
+    ra_food            = st.checkbox("Food & Agriculture, Department of", value=False)
+    ra_forestry        = st.checkbox("Forestry and Fire Protection, Department of", value=True)
+    ra_general_svc     = st.checkbox("General Services, Department of", value=False)
+    ra_health          = st.checkbox("Health Services, Department of", value=False)
+    ra_housing         = st.checkbox("Housing & Community Development", value=False)
+    ra_nahc            = st.checkbox("Native American Heritage Commission", value=True)
+
+with col_r:
+    ra_ohp             = st.checkbox("Office of Historic Preservation", value=True)
+    ra_opsc            = st.checkbox("Office of Public School Construction", value=False)
+    ra_parks           = st.checkbox("Parks & Recreation, Department of", value=False)
+    ra_pesticide       = st.checkbox("Pesticide Regulation, Department of", value=False)
+    ra_puc             = st.checkbox("Public Utilities Commission", value=True)
+    ra_wqcb            = st.checkbox("Regional WQCB #n", value=True)
+    ra_wqcb_n = ""
+    if ra_wqcb:
+        ra_wqcb_n = st.text_input("Regional WQCB Number", placeholder="e.g. 5")
+    ra_resources       = st.checkbox("Resources Agency", value=True)
+    ra_recycling       = st.checkbox("Resources Recycling and Recovery, Department of", value=False)
+    ra_sfbay           = st.checkbox("S.F. Bay Conservation & Development Comm.", value=False)
+    ra_san_gabriel     = st.checkbox("San Gabriel & Lower L.A. Rivers & Mtns. Conservancy", value=False)
+    ra_san_joaquin     = st.checkbox("San Joaquin River Conservancy", value=False)
+    ra_santa_monica    = st.checkbox("Santa Monica Mtns. Conservancy", value=False)
+    ra_state_lands     = st.checkbox("State Lands Commission", value=False)
+    ra_swrcb_cwg       = st.checkbox("SWRCB: Clean Water Grants", value=False)
+    ra_swrcb_wq        = st.checkbox("SWRCB: Water Quality", value=True)
+    ra_swrcb_wr        = st.checkbox("SWRCB: Water Rights", value=True)
+    ra_tahoe           = st.checkbox("Tahoe Regional Planning Agency", value=False)
+    ra_toxic           = st.checkbox("Toxic Substances Control, Department of", value=True)
+    ra_water_res       = st.checkbox("Water Resources, Department of", value=True)
+    ra_other_1         = st.text_input("Other Agency 1", placeholder="e.g. County Planning Department")
+    ra_other_2         = st.text_input("Other Agency 2", placeholder="e.g. Local Air District")
+
+st.divider()
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def field(label, value):
@@ -772,6 +837,88 @@ def generate_pdf():
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
     story.append(Spacer(1, 4))
     add_field(story, "Description", field("Project Description", project_description))
+
+    # Reviewing Agencies Checklist
+    story.append(Paragraph("Reviewing Agencies Checklist", heading_style))
+    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
+    story.append(Spacer(1, 4))
+
+    agency_map = {
+        "Air Resources Board":                                    ra_air,
+        "Boating & Waterways, Department of":                     ra_boating,
+        "California Emergency Management Agency":                 ra_cal_ema,
+        "California Highway Patrol":                              ra_chp,
+        f"Caltrans District #{ra_caltrans_dist_n or 'n'}" if ra_caltrans_dist else "Caltrans District #n": ra_caltrans_dist,
+        "Caltrans Division of Aeronautics":                       ra_caltrans_aero,
+        "Caltrans Planning":                                      ra_caltrans_plan,
+        "Central Valley Flood Protection Board":                  ra_cvfpb,
+        "Coachella Valley Mtns. Conservancy":                     ra_coachella,
+        "Coastal Commission":                                      ra_coastal,
+        "Colorado River Board":                                   ra_colorado,
+        "Conservation, Department of":                            ra_conservation,
+        "Corrections, Department of":                             ra_corrections,
+        "Delta Protection Commission":                            ra_delta,
+        "Education, Department of":                               ra_education,
+        "Energy Commission":                                      ra_energy,
+        f"Fish & Game Region #{ra_fish_n or 'n'}" if ra_fish else "Fish & Game Region #n": ra_fish,
+        "Food & Agriculture, Department of":                      ra_food,
+        "Forestry and Fire Protection, Department of":            ra_forestry,
+        "General Services, Department of":                        ra_general_svc,
+        "Health Services, Department of":                         ra_health,
+        "Housing & Community Development":                        ra_housing,
+        "Native American Heritage Commission":                    ra_nahc,
+        "Office of Historic Preservation":                        ra_ohp,
+        "Office of Public School Construction":                   ra_opsc,
+        "Parks & Recreation, Department of":                      ra_parks,
+        "Pesticide Regulation, Department of":                    ra_pesticide,
+        "Public Utilities Commission":                            ra_puc,
+        f"Regional WQCB #{ra_wqcb_n or 'n'}" if ra_wqcb else "Regional WQCB #n": ra_wqcb,
+        "Resources Agency":                                       ra_resources,
+        "Resources Recycling and Recovery, Department of":        ra_recycling,
+        "S.F. Bay Conservation & Development Comm.":              ra_sfbay,
+        "San Gabriel & Lower L.A. Rivers & Mtns. Conservancy":   ra_san_gabriel,
+        "San Joaquin River Conservancy":                          ra_san_joaquin,
+        "Santa Monica Mtns. Conservancy":                         ra_santa_monica,
+        "State Lands Commission":                                 ra_state_lands,
+        "SWRCB: Clean Water Grants":                              ra_swrcb_cwg,
+        "SWRCB: Water Quality":                                   ra_swrcb_wq,
+        "SWRCB: Water Rights":                                    ra_swrcb_wr,
+        "Tahoe Regional Planning Agency":                         ra_tahoe,
+        "Toxic Substances Control, Department of":                ra_toxic,
+        "Water Resources, Department of":                         ra_water_res,
+    }
+    if ra_other_1.strip():
+        agency_map[ra_other_1.strip()] = True
+    if ra_other_2.strip():
+        agency_map[ra_other_2.strip()] = True
+
+    checked_agencies = [name for name, checked in agency_map.items() if checked]
+    if checked_agencies:
+        # Two-column layout using a table for visual alignment, with accessible text
+        story.append(Paragraph("Selected Reviewing Agencies:", label_style))
+        story.append(Spacer(1, 4))
+        # Split into two columns
+        mid = (len(checked_agencies) + 1) // 2
+        left_col  = checked_agencies[:mid]
+        right_col = checked_agencies[mid:]
+        # Pad right col if shorter
+        while len(right_col) < len(left_col):
+            right_col.append("")
+        agency_table_data = [
+            [Paragraph(f"☑ {l}", value_style), Paragraph(f"☑ {r}" if r else "", value_style)]
+            for l, r in zip(left_col, right_col)
+        ]
+        agency_table = Table(agency_table_data, colWidths=[3.0*inch, 3.0*inch])
+        agency_table.setStyle(TableStyle([
+            ("VALIGN",      (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 2),
+            ("RIGHTPADDING",(0, 0), (-1, -1), 6),
+            ("TOPPADDING",  (0, 0), (-1, -1), 2),
+            ("BOTTOMPADDING",(0,0), (-1, -1), 2),
+        ]))
+        story.append(agency_table)
+    else:
+        story.append(Paragraph("[No reviewing agencies selected]", value_style))
 
     doc.build(story)
     buffer.seek(0)
