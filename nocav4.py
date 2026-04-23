@@ -382,7 +382,7 @@ st.divider()
 st.subheader("Development Type")
 
 # ── Power ──
-dev_power = st.checkbox("Power")
+dev_power = st.checkbox("Power", value=True)
 dev_power_wind = dev_power_solar = dev_power_bess = dev_power_other = False
 dev_power_other_text = ""
 if dev_power:
@@ -932,7 +932,7 @@ def generate_pdf():
         "Corrections, Department of":                             ra_corrections,
         "Delta Protection Commission":                            ra_delta,
         "Education, Department of":                               ra_education,
-        "Energy Commission":                                      ra_energy,
+        "[S] Energy Commission":                                  ra_energy,
         f"Fish & Game Region #{ra_fish_n or 'n'}" if ra_fish else "Fish & Game Region #n": ra_fish,
         "Food & Agriculture, Department of":                      ra_food,
         "Forestry and Fire Protection, Department of":            ra_forestry,
@@ -970,7 +970,10 @@ def generate_pdf():
         story.append(Paragraph("Selected Reviewing Agencies:", label_style))
         story.append(Spacer(1, 4))
         for agency in checked_agencies:
-            story.append(Paragraph(f"[X] {agency}", value_style))
+            if agency.startswith("[S] "):
+                story.append(Paragraph(f"[S] {agency[4:]}", value_style))
+            else:
+                story.append(Paragraph(f"[X] {agency}", value_style))
     else:
         story.append(Paragraph("[No reviewing agencies selected]", value_style))
 
