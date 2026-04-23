@@ -783,30 +783,14 @@ def generate_pdf():
         fontSize=10, spaceAfter=6,
     )
 
-    class H2Paragraph(Paragraph):
-        """Paragraph that writes an explicit /H2 structure tag into the PDF."""
-        def draw(self):
-            self.canv.beginTag("/H2")
-            super().draw()
-            self.canv.endTag()
-
-    class H1Paragraph(Paragraph):
-        """Paragraph that writes an explicit /H1 structure tag into the PDF."""
-        def draw(self):
-            self.canv.beginTag("/H1")
-            super().draw()
-            self.canv.endTag()
-
     def add_field(story, label, value):
         story.append(Paragraph(label, label_style))
         story.append(Paragraph(value, value_style))
 
     def add_heading(story, text, level="h2"):
-        """Add a semantically tagged H1 or H2 heading."""
-        if level == "h1":
-            story.append(H1Paragraph(text, title_style))
-        else:
-            story.append(H2Paragraph(text, heading_style))
+        """Add a heading — outlineLevel in the style handles bookmark structure."""
+        style = title_style if level == "h1" else heading_style
+        story.append(Paragraph(text, style))
 
     def add_checked(story, label, options_dict):
         result = checked_list(options_dict)
@@ -819,7 +803,7 @@ def generate_pdf():
     # Header — H1 title block
     title_block = [
         Paragraph("California Energy Commission", label_style),
-        H1Paragraph("Notice of Completion &amp; Environmental Document Transmittal", title_style),
+        Paragraph("Notice of Completion &amp; Environmental Document Transmittal", title_style),
     ]
     if os.path.exists(LOGO_PATH):
         logo = Image(LOGO_PATH, width=0.85*inch, height=0.85*inch)
