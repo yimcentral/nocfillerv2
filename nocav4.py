@@ -686,7 +686,7 @@ def generate_pdf():
     add_field(story, "Lead Agency",      "California Energy Commission")
     add_field(story, "Project Manager",  field("Contact Person", contact_name))
     add_field(story, "Mailing Address",  "715 P St, MS 40")
-    add_field(story, "Phone",            field("Phone", phone))
+    add_field(story, "Phone",            field("Phone", preset_phone))
     add_field(story, "City",             "Sacramento")
     add_field(story, "ZIP",              "95814")
     add_field(story, "County",           "Sacramento")
