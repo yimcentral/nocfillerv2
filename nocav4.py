@@ -27,7 +27,7 @@ LOGO_PATH = "cec_logo.png"
 
 
 class SignatureAnchor(Flowable):
-    """Invisible flowable that records the exact page/y position for the signature field."""
+    """Invisible flowable that records the exact placed page/x/y position for the signature field."""
     def __init__(self, key="signature"):
         super().__init__()
         self.key = key
@@ -41,10 +41,11 @@ class SignatureAnchor(Flowable):
         canvas = self.canv
         if not hasattr(canvas, "_field_positions"):
             canvas._field_positions = {}
+        abs_x, abs_y = canvas.absolutePosition(0, 0)
         canvas._field_positions[self.key] = {
             "page": canvas.getPageNumber(),
-            "x": float(canvas._leftMargin),
-            "y": float(canvas._curr_y),
+            "x": float(abs_x),
+            "y": float(abs_y),
         }
 
 
