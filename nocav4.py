@@ -545,7 +545,7 @@ with col_l:
     ra_boating         = st.checkbox("Boating & Waterways, Department of", value=False)
     ra_cal_ema         = st.checkbox("California Emergency Management Agency", value=True)
     ra_chp             = st.checkbox("California Highway Patrol", value=True)
-    ra_caltrans_dist   = st.checkbox("Caltrans District #n", value=True)
+    ra_caltrans_dist   = st.checkbox("Caltrans District #", value=True)
     ra_caltrans_dist_n = ""
     if ra_caltrans_dist:
         ra_caltrans_dist_n = st.text_input("Caltrans District Number", placeholder="e.g. 7")
@@ -560,7 +560,7 @@ with col_l:
     ra_delta           = st.checkbox("Delta Protection Commission", value=False)
     ra_education       = st.checkbox("Education, Department of", value=False)
     ra_energy          = st.checkbox("Energy Commission", value=True)
-    ra_fish            = st.checkbox("Fish & Game Region #n", value=True)
+    ra_fish            = st.checkbox("Fish & Game Region #", value=True)
     ra_fish_n = ""
     if ra_fish:
         ra_fish_n = st.text_input("Fish & Game Region Number", placeholder="e.g. 4")
@@ -577,7 +577,7 @@ with col_r:
     ra_parks           = st.checkbox("Parks & Recreation, Department of", value=False)
     ra_pesticide       = st.checkbox("Pesticide Regulation, Department of", value=False)
     ra_puc             = st.checkbox("Public Utilities Commission", value=True)
-    ra_wqcb            = st.checkbox("Regional WQCB #n", value=True)
+    ra_wqcb            = st.checkbox("Regional WQCB #", value=True)
     ra_wqcb_n = ""
     if ra_wqcb:
         ra_wqcb_n = st.text_input("Regional WQCB Number", placeholder="e.g. 5")
@@ -594,8 +594,8 @@ with col_r:
     ra_tahoe           = st.checkbox("Tahoe Regional Planning Agency", value=False)
     ra_toxic           = st.checkbox("Toxic Substances Control, Department of", value=True)
     ra_water_res       = st.checkbox("Water Resources, Department of", value=True)
-    ra_other_1         = st.text_input("Other Agency 1", placeholder="e.g. County Planning Department")
-    ra_other_2         = st.text_input("Other Agency 2", placeholder="e.g. Local Air District")
+    ra_other_1         = st.text_input("Other Agency 1")
+    ra_other_2         = st.text_input("Other Agency 2")
 
 st.divider()
 
@@ -625,7 +625,7 @@ def generate_pdf():
         title=PDF_TITLE,
         author="California Energy Commission",
         subject="CEQA/NEPA Environmental Document Transmittal",
-        creator="California Energy Commission NOC Generator",
+        creator="California Energy Commission STEP Division",
     )
 
     styles = getSampleStyleSheet()
