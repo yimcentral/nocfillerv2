@@ -408,20 +408,28 @@ st.subheader("Development Type")
 dev_power = st.checkbox("Power", value=True)
 dev_power_wind = dev_power_solar = dev_power_bess = dev_power_other = False
 dev_power_other_text = ""
+dev_power_wind_mw = dev_power_solar_mw = dev_power_bess_mw = dev_power_other_mw = ""
 if dev_power:
     with st.container():
         st.markdown("<div style='margin-left:20px'>", unsafe_allow_html=True)
         pc1, pc2, pc3, pc4 = st.columns(4)
         with pc1:
             dev_power_wind  = st.checkbox("Wind")
+            if dev_power_wind:
+                dev_power_wind_mw = st.text_input("Wind — MW", placeholder="e.g. 150")
         with pc2:
             dev_power_solar = st.checkbox("Solar Photovoltaic")
+            if dev_power_solar:
+                dev_power_solar_mw = st.text_input("Solar — MW", placeholder="e.g. 200")
         with pc3:
             dev_power_bess  = st.checkbox("Battery Energy Storage System")
+            if dev_power_bess:
+                dev_power_bess_mw = st.text_input("BESS — MW", placeholder="e.g. 100")
         with pc4:
             dev_power_other = st.checkbox("Other (Power)")
-        if dev_power_other:
-            dev_power_other_text = st.text_input("Power — Other (specify)", placeholder="e.g. Geothermal")
+            if dev_power_other:
+                dev_power_other_text = st.text_input("Other — Type", placeholder="e.g. Geothermal")
+                dev_power_other_mw   = st.text_input("Other — MW", placeholder="e.g. 50")
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ── Non-Power ──
@@ -935,12 +943,18 @@ def generate_pdf():
         story.append(Spacer(1, 4))
 
     if dev_power:
-        power_subs = {"Wind": dev_power_wind, "Solar Photovoltaic": dev_power_solar,
-                      "Battery Energy Storage System": dev_power_bess}
+        def mw(val):
+            return f" ({val.strip()} MW)" if val and val.strip() else ""
+        power_lines = []
+        if dev_power_wind:
+            power_lines.append(f"Wind{mw(dev_power_wind_mw)}")
+        if dev_power_solar:
+            power_lines.append(f"Solar Photovoltaic{mw(dev_power_solar_mw)}")
+        if dev_power_bess:
+            power_lines.append(f"Battery Energy Storage System{mw(dev_power_bess_mw)}")
         if dev_power_other and dev_power_other_text.strip():
-            power_subs[f"Other: {dev_power_other_text.strip()}"] = True
-        sub_str = checked_list(power_subs) or "—"
-        add_field(story, "Power", sub_str)
+            power_lines.append(f"Other: {dev_power_other_text.strip()}{mw(dev_power_other_mw)}")
+        add_field(story, "Power", ", ".join(power_lines) if power_lines else "—")
 
     if dev_nonpower:
         if dev_residential:
