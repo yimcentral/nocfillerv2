@@ -1083,11 +1083,16 @@ def generate_pdf():
         page_height = float(target_page.mediabox.height)
 
         sig_left = float(anchor["x"])
-        sig_top_from_top = float(anchor["y"]) + 14
+        anchor_y = float(anchor["y"])
         sig_width = 2.5 * inch
         sig_height = 0.5 * inch
-        sig_bottom = page_height - sig_top_from_top - sig_height
-        sig_top = sig_bottom + sig_height
+        sig_gap = 2
+
+        # anchor_y from canvas.absolutePosition is already in PDF coordinates
+        # (origin at bottom-left). Place the signature field *below* the anchor,
+        # not by converting it again from the top of the page.
+        sig_top = anchor_y - sig_gap
+        sig_bottom = sig_top - sig_height
         sig_rect = [sig_left, sig_bottom, sig_left + sig_width, sig_top]
 
         sig_field = DictionaryObject({
