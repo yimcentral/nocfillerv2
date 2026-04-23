@@ -64,6 +64,51 @@ BOOLEAN_FIELDS = {
 }
 DATE_FIELDS = {"review_start", "review_end"}
 
+HEADER_ALIASES = {
+    "county": "county",
+    "project_county": "county",
+    "city": "city",
+    "project_city": "city",
+    "zip": "zip",
+    "project_zip": "zip",
+    "latgpu": "lat_gpu",
+    "latgpa": "lat_gpa",
+    "latgpe": "lat_gpe",
+    "latcp": "lat_cp",
+    "latsp": "lat_sp",
+    "latmp": "lat_mp",
+    "latpud": "lat_pud",
+    "latrezone": "lat_rezone",
+    "latprezone": "lat_prezone",
+    "latannex": "lat_annex",
+    "latredevel": "lat_redevel",
+    "latuse": "lat_use",
+    "latcoastal": "lat_coastal",
+    "latsite": "lat_site",
+    "latlanddiv": "lat_land_div",
+    "latothercheck": "lat_other_check",
+    "latothertext": "lat_other_text",
+    "lafirmname": "la_firm_name",
+    "lafirmaddress": "la_firm_address",
+    "lafirmcsz": "la_firm_csz",
+    "lafirmcontact": "la_firm_contact",
+    "lafirmphone": "la_firm_phone",
+    "laappname": "la_app_name",
+    "laappaddress": "la_app_address",
+    "laappcsz": "la_app_csz",
+    "laappphone": "la_app_phone",
+}
+
+
+def normalize_header(name):
+    if name is None:
+        return ""
+    raw = str(name).strip()
+    if not raw:
+        return ""
+    compact = "".join(ch for ch in raw.lower() if ch.isalnum())
+    return HEADER_ALIASES.get(compact, raw)
+
 
 def parse_bool(value, default=False):
     if value is None:
@@ -114,18 +159,23 @@ def load_presets():
         return {}
     try:
         df = pd.read_excel(ods_path, engine="odf", dtype=object)
+        df = df.rename(columns=lambda col: normalize_header(col))
+        df = df.loc[:, ~df.columns.duplicated()]
         df = df.dropna(how="all")
         presets = {}
         for _, row in df.iterrows():
+            raw_row = {normalize_header(key): value for key, value in row.to_dict().items()}
             row_dict = {}
-            for key, raw_value in row.to_dict().items():
+            for key, raw_value in raw_row.items():
+                if not key:
+                    continue
                 if key in BOOLEAN_FIELDS:
                     row_dict[key] = parse_bool(raw_value, False)
                 elif key in DATE_FIELDS:
                     row_dict[key] = parse_date_value(raw_value)
                 else:
                     row_dict[key] = clean_scalar(raw_value, "")
-            title = row_dict.get("project_title", "")
+            title = clean_scalar(row_dict.get("project_title", ""), "")
             if title:
                 presets[title] = row_dict
         return presets
