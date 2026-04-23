@@ -927,7 +927,7 @@ def generate_pdf():
         while len(right_col) < len(left_col):
             right_col.append("")
         agency_table_data = [
-            [Paragraph(f"☑ {l}", value_style), Paragraph(f"☑ {r}" if r else "", value_style)]
+            [Paragraph(f"[X] {l}", value_style), Paragraph(f"[X] {r}" if r else "", value_style)]
             for l, r in zip(left_col, right_col)
         ]
         agency_table = Table(agency_table_data, colWidths=[3.0*inch, 3.0*inch])
