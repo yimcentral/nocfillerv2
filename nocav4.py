@@ -17,6 +17,11 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable,
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
 from reportlab.platypus.doctemplate import IndexingFlowable
+from pypdf import PdfReader, PdfWriter
+from pypdf.generic import (
+    DictionaryObject, ArrayObject, NameObject, NumberObject,
+    TextStringObject,
+)
 
 LOGO_PATH = "cec_logo.png"
 
@@ -1032,22 +1037,60 @@ def generate_pdf():
     add_field(story, "City / State / ZIP", field("City/State/ZIP", la_app_csz))
     add_field(story, "Phone",           field("Phone", la_app_phone))
 
-    # Signature block
+    # Signature block — placeholder space; AcroForm field injected below
     add_heading(story, "Signature of Lead Agency Representative")
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
-    story.append(Spacer(1, 24))
-
-    # Wet signature line — long underscore spanning most of the page
-    story.append(HRFlowable(width=4.5*inch, thickness=1, color=colors.black, spaceAfter=4))
-    story.append(Paragraph("Signature", label_style))
-    story.append(Spacer(1, 16))
+    story.append(Spacer(1, 8))
+    story.append(Paragraph("(Sign below in Adobe Acrobat)", label_style))
+    story.append(Spacer(1, 72))  # vertical space reserved for signature field
 
     sig_date_val = sig_date.strip() if sig_date and sig_date.strip() else "________________"
     story.append(Paragraph(f"Date: {sig_date_val}", value_style))
 
     doc.build(story)
     buffer.seek(0)
-    return buffer
+
+    # ── Inject AcroForm signature field via pypdf ─────────────────────────────
+    reader = PdfReader(buffer)
+    writer = PdfWriter()
+    writer.append(reader)
+
+    last_page = writer.pages[-1]
+    page_height = float(last_page.mediabox.height)
+    page_width  = float(last_page.mediabox.width)
+
+    # Signature box: left-aligned, near bottom of last page
+    # PDF coords are bottom-left origin so we place it in the lower portion
+    margin = 72  # 1 inch
+    sig_rect = [margin, 148, page_width - margin, 210]
+
+    sig_field = DictionaryObject({
+        NameObject("/Type"):    NameObject("/Annot"),
+        NameObject("/Subtype"): NameObject("/Widget"),
+        NameObject("/FT"):      NameObject("/Sig"),
+        NameObject("/T"):       TextStringObject("Signature1"),
+        NameObject("/TU"):      TextStringObject("Signature of Lead Agency Representative"),
+        NameObject("/Rect"):    ArrayObject([NumberObject(x) for x in sig_rect]),
+        NameObject("/F"):       NumberObject(4),
+        NameObject("/P"):       last_page.indirect_reference,
+    })
+
+    sig_obj = writer._add_object(sig_field)
+
+    if "/Annots" not in last_page:
+        last_page[NameObject("/Annots")] = ArrayObject()
+    last_page["/Annots"].append(sig_obj)
+
+    acroform = DictionaryObject({
+        NameObject("/Fields"):   ArrayObject([sig_obj]),
+        NameObject("/SigFlags"): NumberObject(3),
+    })
+    writer._root_object[NameObject("/AcroForm")] = acroform
+
+    signed_buffer = io.BytesIO()
+    writer.write(signed_buffer)
+    signed_buffer.seek(0)
+    return signed_buffer
 
 # ── Generate button ───────────────────────────────────────────────────────────
 
