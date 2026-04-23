@@ -545,7 +545,7 @@ with col_l:
     ra_boating         = st.checkbox("Boating & Waterways, Department of", value=False)
     ra_cal_ema         = st.checkbox("California Emergency Management Agency", value=True)
     ra_chp             = st.checkbox("California Highway Patrol", value=True)
-    ra_caltrans_dist   = st.checkbox("Caltrans District #", value=True)
+    ra_caltrans_dist   = st.checkbox("Caltrans District #n", value=True)
     ra_caltrans_dist_n = ""
     if ra_caltrans_dist:
         ra_caltrans_dist_n = st.text_input("Caltrans District Number", placeholder="e.g. 7")
@@ -560,7 +560,7 @@ with col_l:
     ra_delta           = st.checkbox("Delta Protection Commission", value=False)
     ra_education       = st.checkbox("Education, Department of", value=False)
     ra_energy          = st.checkbox("Energy Commission", value=True)
-    ra_fish            = st.checkbox("Fish & Game Region #", value=True)
+    ra_fish            = st.checkbox("Fish & Game Region #n", value=True)
     ra_fish_n = ""
     if ra_fish:
         ra_fish_n = st.text_input("Fish & Game Region Number", placeholder="e.g. 4")
@@ -577,7 +577,7 @@ with col_r:
     ra_parks           = st.checkbox("Parks & Recreation, Department of", value=False)
     ra_pesticide       = st.checkbox("Pesticide Regulation, Department of", value=False)
     ra_puc             = st.checkbox("Public Utilities Commission", value=True)
-    ra_wqcb            = st.checkbox("Regional WQCB #", value=True)
+    ra_wqcb            = st.checkbox("Regional WQCB #n", value=True)
     ra_wqcb_n = ""
     if ra_wqcb:
         ra_wqcb_n = st.text_input("Regional WQCB Number", placeholder="e.g. 5")
@@ -594,8 +594,57 @@ with col_r:
     ra_tahoe           = st.checkbox("Tahoe Regional Planning Agency", value=False)
     ra_toxic           = st.checkbox("Toxic Substances Control, Department of", value=True)
     ra_water_res       = st.checkbox("Water Resources, Department of", value=True)
-    ra_other_1         = st.text_input("Other Agency 1")
-    ra_other_2         = st.text_input("Other Agency 2")
+    ra_other_1         = st.text_input("Other Agency 1", placeholder="e.g. County Planning Department")
+    ra_other_2         = st.text_input("Other Agency 2", placeholder="e.g. Local Air District")
+
+st.divider()
+
+# ── SECTION: Local Public Review Period ───────────────────────────────────────
+
+st.subheader("Local Public Review Period")
+
+from datetime import date, timedelta
+
+if "review_start" not in st.session_state:
+    st.session_state.review_start = None
+if "review_end" not in st.session_state:
+    st.session_state.review_end = None
+
+def next_business_day(d):
+    """Roll d forward to Monday if it lands on a weekend."""
+    while d.weekday() >= 5:  # 5=Saturday, 6=Sunday
+        d += timedelta(days=1)
+    return d
+
+col_start, col_end = st.columns(2)
+
+with col_start:
+    st.markdown("**Starting Date**")
+    if st.button("Today", key="btn_today"):
+        st.session_state.review_start = date.today()
+    review_start = st.date_input(
+        "Starting Date",
+        value=st.session_state.review_start,
+        label_visibility="collapsed",
+        key="date_start",
+    )
+    st.session_state.review_start = review_start
+
+with col_end:
+    st.markdown("**Ending Date**")
+    if st.button("+30 Days", key="btn_30"):
+        if st.session_state.review_start:
+            raw_end = st.session_state.review_start + timedelta(days=30)
+            st.session_state.review_end = next_business_day(raw_end)
+        else:
+            st.warning("Please set a Starting Date first.")
+    review_end = st.date_input(
+        "Ending Date",
+        value=st.session_state.review_end,
+        label_visibility="collapsed",
+        key="date_end",
+    )
+    st.session_state.review_end = review_end
 
 st.divider()
 
@@ -625,7 +674,7 @@ def generate_pdf():
         title=PDF_TITLE,
         author="California Energy Commission",
         subject="CEQA/NEPA Environmental Document Transmittal",
-        creator="California Energy Commission STEP Division",
+        creator="California Energy Commission NOC Generator",
     )
 
     styles = getSampleStyleSheet()
@@ -922,6 +971,15 @@ def generate_pdf():
             story.append(Paragraph(f"[X] {agency}", value_style))
     else:
         story.append(Paragraph("[No reviewing agencies selected]", value_style))
+
+    # Local Public Review Period
+    add_heading(story, "Local Public Review Period")
+    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
+    story.append(Spacer(1, 4))
+    start_str = review_start.strftime("%B %d, %Y") if review_start else "[Not provided]"
+    end_str   = review_end.strftime("%B %d, %Y")   if review_end   else "[Not provided]"
+    add_field(story, "Starting Date", start_str)
+    add_field(story, "Ending Date",   end_str)
 
     doc.build(story)
     buffer.seek(0)
