@@ -735,19 +735,6 @@ def generate_pdf():
 
     PDF_TITLE = "Notice of Completion & Environmental Document Transmittal"
 
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=letter,
-        rightMargin=inch,
-        leftMargin=inch,
-        topMargin=inch,
-        bottomMargin=inch,
-        title=PDF_TITLE,
-        author="California Energy Commission",
-        subject="CEQA/NEPA Environmental Document Transmittal",
-        creator="California Energy Commission NOC Generator",
-    )
-
     styles = getSampleStyleSheet()
 
     # H1 — document title (used once, sets PDF heading structure)
@@ -1107,22 +1094,36 @@ def generate_pdf():
     add_field(story, "City / State / ZIP", field("City/State/ZIP", la_app_csz))
     add_field(story, "Phone",           field("Phone", la_app_phone))
 
-    # Signature block — use a canvas callback to capture the exact Y position
-    sig_position = {}  # will be populated during build
+    # Signature block — use afterFlowable callback to capture heading position
+    sig_position = {}
 
-    class SigAnchor(Spacer):
-        """Zero-height flowable that records its drawn position."""
-        def draw(self):
-            sig_position["page"] = self.canv.getPageNumber()
-            sig_position["y"]    = self.canv._y
-            sig_position["x"]    = self.canv._pagesize[0]  # page width
+    class SigDocTemplate(SimpleDocTemplate):
+        def afterFlowable(self, flowable):
+            if getattr(flowable, "_sig_anchor", False):
+                sig_position["page"] = self.page
+                sig_position["y"]    = self.frame._y
+                sig_position["h"]    = self.frame._height
+
+    sig_doc = SigDocTemplate(
+        buffer,
+        pagesize=letter,
+        rightMargin=inch, leftMargin=inch,
+        topMargin=inch, bottomMargin=inch,
+        title="Notice of Completion & Environmental Document Transmittal",
+        author="California Energy Commission",
+        subject="CEQA/NEPA Environmental Document Transmittal",
+        creator="California Energy Commission NOC Generator",
+    )
 
     add_heading(story, "Signature of Lead Agency Representative")
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
-    story.append(Spacer(1, 6))
-    story.append(SigAnchor(0, 0))  # invisible anchor — records position here
 
-    doc.build(story)
+    # Invisible zero-height spacer tagged as our anchor
+    anchor = Spacer(0, 8)
+    anchor._sig_anchor = True
+    story.append(anchor)
+
+    sig_doc.build(story)
     buffer.seek(0)
 
     # ── Inject AcroForm signature field via pypdf ─────────────────────────────
@@ -1130,18 +1131,15 @@ def generate_pdf():
     writer = PdfWriter()
     writer.append(reader)
 
-    # Use the captured position; fall back to last page bottom if missing
     sig_page_num = sig_position.get("page", len(writer.pages))
-    sig_y        = sig_position.get("y", 100)
-    sig_x        = sig_position.get("x", 612)
+    sig_y        = sig_position.get("y", 200)
 
     target_page = writer.pages[sig_page_num - 1]
 
-    # Box: left margin to ~3.5in wide, 0.5in tall, just below anchor point
     box_left   = 72
-    box_right  = 324          # ~3.5 inches from left
-    box_top    = sig_y - 4    # just below the spacer
-    box_bottom = box_top - 36 # 0.5 inch tall
+    box_right  = 324
+    box_top    = sig_y - 2
+    box_bottom = box_top - 36
 
     sig_rect = [box_left, box_bottom, box_right, box_top]
 
