@@ -151,35 +151,25 @@ def preset_date(preset, key):
         return None
     return parse_date_value(preset.get(key))
 
-FIELD_KEY_MAP = {
-    "county": "project_county",
-    "city": "project_city",
-    "zip": "project_zip",
-}
-
-
 def apply_preset_to_session(project_title):
     preset = PRESETS.get(project_title, {})
-    if st.session_state.get("_loaded_project_title") == project_title:
-        return preset
     if not project_title:
         st.session_state["_loaded_project_title"] = ""
         return {}
     for key, value in preset.items():
         if key == "project_title":
             continue
-        target_key = FIELD_KEY_MAP.get(key, key)
         if key in BOOLEAN_FIELDS:
-            st.session_state[target_key] = parse_bool(value, False)
+            st.session_state[key] = parse_bool(value, False)
         elif key in DATE_FIELDS:
             parsed_date = parse_date_value(value)
-            st.session_state[target_key] = parsed_date
+            st.session_state[key] = parsed_date
             if key == "review_start":
                 st.session_state.date_start = parsed_date
             elif key == "review_end":
                 st.session_state.date_end = parsed_date
         else:
-            st.session_state[target_key] = clean_scalar(value, "")
+            st.session_state[key] = clean_scalar(value, "")
     if clean_scalar(preset.get("contact_name"), ""):
         st.session_state["contact_name"] = clean_scalar(preset.get("contact_name"), "")
     st.session_state["_loaded_project_title"] = project_title
@@ -399,12 +389,12 @@ st.subheader("Project Location")
 
 col1, col2 = st.columns(2)
 with col1:
-    project_county = st.text_input("County", placeholder="e.g. Kern", key="project_county")
+    project_county = st.text_input("County", placeholder="e.g. Kern", value=preset_val(preset, "county"), key="project_county")
     cross_streets = st.text_input("Cross Streets", placeholder="e.g. Hwy 58 & Wind Farm Rd", value=preset_val(preset, "cross_streets"), key="cross_streets")
     latitude = st.text_input("Latitude", placeholder="e.g. 35° 21' 14\" N", value=preset_val(preset, "latitude"), key="latitude")
 with col2:
-    project_city = st.text_input("City / Nearest Community", placeholder="e.g. Mojave", key="project_city")
-    project_zip = st.text_input("ZIP Code", placeholder="e.g. 93501", key="project_zip")
+    project_city = st.text_input("City / Nearest Community", placeholder="e.g. Mojave", value=preset_val(preset, "city"), key="project_city")
+    project_zip = st.text_input("ZIP Code", placeholder="e.g. 93501", value=preset_val(preset, "zip"), key="project_zip")
     longitude = st.text_input("Longitude", placeholder="e.g. 118° 09' 22\" W", value=preset_val(preset, "longitude"), key="longitude")
 
 total_acres = st.text_input("Total Acres", placeholder="e.g. 4,200", value=preset_val(preset, "total_acres"), key="total_acres")
@@ -500,28 +490,28 @@ st.subheader("Local Action Type")
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    lat_gpu = st.checkbox("General Plan Update", value=preset_bool(preset, "lat_gpu", False), key="lat_gpu")
-    lat_gpa = st.checkbox("General Plan Amendment", value=preset_bool(preset, "lat_gpa", False), key="lat_gpa")
-    lat_gpe = st.checkbox("General Plan Element", value=preset_bool(preset, "lat_gpe", False), key="lat_gpe")
-    lat_cp = st.checkbox("Community Plan", value=preset_bool(preset, "lat_cp", False), key="lat_cp")
-    lat_sp = st.checkbox("Specific Plan", value=preset_bool(preset, "lat_sp", False), key="lat_sp")
+    lat_gpu = st.checkbox("General Plan Update", key="lat_gpu")
+    lat_gpa = st.checkbox("General Plan Amendment", key="lat_gpa")
+    lat_gpe = st.checkbox("General Plan Element", key="lat_gpe")
+    lat_cp = st.checkbox("Community Plan", key="lat_cp")
+    lat_sp = st.checkbox("Specific Plan", key="lat_sp")
 with col2:
-    lat_mp = st.checkbox("Master Plan", value=preset_bool(preset, "lat_mp", False), key="lat_mp")
-    lat_pud = st.checkbox("Planned Unit Development", value=preset_bool(preset, "lat_pud", False), key="lat_pud")
-    lat_rezone = st.checkbox("Rezone", value=preset_bool(preset, "lat_rezone", False), key="lat_rezone")
-    lat_prezone = st.checkbox("Prezone", value=preset_bool(preset, "lat_prezone", False), key="lat_prezone")
-    lat_annex = st.checkbox("Annexation", value=preset_bool(preset, "lat_annex", False), key="lat_annex")
+    lat_mp = st.checkbox("Master Plan", key="lat_mp")
+    lat_pud = st.checkbox("Planned Unit Development", key="lat_pud")
+    lat_rezone = st.checkbox("Rezone", key="lat_rezone")
+    lat_prezone = st.checkbox("Prezone", key="lat_prezone")
+    lat_annex = st.checkbox("Annexation", key="lat_annex")
 with col3:
-    lat_redevel = st.checkbox("Redevelopment", value=preset_bool(preset, "lat_redevel", False), key="lat_redevel")
-    lat_use = st.checkbox("Use Permit", value=preset_bool(preset, "lat_use", False), key="lat_use")
-    lat_coastal = st.checkbox("Coastal Permit", value=preset_bool(preset, "lat_coastal", False), key="lat_coastal")
-    lat_site = st.checkbox("Site Plan", value=preset_bool(preset, "lat_site", False), key="lat_site")
-    lat_land_div = st.checkbox("Land Division (Subdivision, etc.)", value=preset_bool(preset, "lat_land_div", False), key="lat_land_div")
-    lat_other_check = st.checkbox("Other (Local Action)", value=preset_bool(preset, "lat_other_check", False), key="lat_other_check")
+    lat_redevel = st.checkbox("Redevelopment", key="lat_redevel")
+    lat_use = st.checkbox("Use Permit", key="lat_use")
+    lat_coastal = st.checkbox("Coastal Permit", key="lat_coastal")
+    lat_site = st.checkbox("Site Plan", key="lat_site")
+    lat_land_div = st.checkbox("Land Division (Subdivision, etc.)", key="lat_land_div")
+    lat_other_check = st.checkbox("Other (Local Action)", key="lat_other_check")
 
 lat_other_text = ""
 if lat_other_check:
-    lat_other_text = st.text_input("Local Action Type — Other (please specify)", placeholder="Describe other local action type", value=preset_val(preset, "lat_other_text"), key="lat_other_text")
+    lat_other_text = st.text_input("Local Action Type — Other (please specify)", placeholder="Describe other local action type", key="lat_other_text")
 
 st.divider()
 
@@ -852,17 +842,17 @@ st.divider()
 st.subheader("Lead Agency")
 
 st.markdown("**Consulting Firm**")
-la_firm_name = st.text_input("Consulting Firm", placeholder="e.g. SWCA Environmental Consultants", label_visibility="collapsed", value=preset_val(preset, "la_firm_name"), key="la_firm_name")
-la_firm_address = st.text_input("Address", placeholder="e.g. 1420 Harbor Bay Pkwy", value=preset_val(preset, "la_firm_address"), key="la_firm_address")
-la_firm_csz = st.text_input("City / State / ZIP", placeholder="e.g. Alameda, CA 94502", value=preset_val(preset, "la_firm_csz"), key="la_firm_csz")
-la_firm_contact = st.text_input("Contact", placeholder="e.g. Jane Smith", value=preset_val(preset, "la_firm_contact"), key="la_firm_contact")
-la_firm_phone = st.text_input("Phone", placeholder="e.g. 510-555-0100", value=preset_val(preset, "la_firm_phone"), key="la_firm_phone")
+la_firm_name = st.text_input("Consulting Firm", placeholder="e.g. SWCA Environmental Consultants", label_visibility="collapsed", key="la_firm_name")
+la_firm_address = st.text_input("Address", placeholder="e.g. 1420 Harbor Bay Pkwy", key="la_firm_address")
+la_firm_csz = st.text_input("City / State / ZIP", placeholder="e.g. Alameda, CA 94502", key="la_firm_csz")
+la_firm_contact = st.text_input("Contact", placeholder="e.g. Jane Smith", key="la_firm_contact")
+la_firm_phone = st.text_input("Phone", placeholder="e.g. 510-555-0100", key="la_firm_phone")
 
 st.markdown("**Applicant**")
-la_app_name = st.text_input("Applicant", placeholder="e.g. Pacific Solar LLC", label_visibility="collapsed", value=preset_val(preset, "la_app_name"), key="la_app_name")
-la_app_address = st.text_input("Address", placeholder="e.g. 350 Market St", value=preset_val(preset, "la_app_address"), key="la_app_address")
-la_app_csz = st.text_input("City / State / ZIP", placeholder="e.g. San Francisco, CA 94105", value=preset_val(preset, "la_app_csz"), key="la_app_csz")
-la_app_phone = st.text_input("Phone", placeholder="e.g. 415-555-0200", value=preset_val(preset, "la_app_phone"), key="la_app_phone")
+la_app_name = st.text_input("Applicant", placeholder="e.g. Pacific Solar LLC", label_visibility="collapsed", key="la_app_name")
+la_app_address = st.text_input("Address", placeholder="e.g. 350 Market St", key="la_app_address")
+la_app_csz = st.text_input("City / State / ZIP", placeholder="e.g. San Francisco, CA 94105", key="la_app_csz")
+la_app_phone = st.text_input("Phone", placeholder="e.g. 415-555-0200", key="la_app_phone")
 
 st.divider()
 
