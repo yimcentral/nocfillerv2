@@ -1039,7 +1039,7 @@ def generate_pdf():
     # Signature block
     add_heading(story, "Signature of Lead Agency Representative")
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
-    story.append(Spacer(1, 60))
+    story.append(Spacer(1, 8))
 
     doc.build(story)
     buffer.seek(0)
@@ -1054,7 +1054,7 @@ def generate_pdf():
 
     # Small signature box: 2.5in wide x 0.5in tall, top-left of signature area
     # Placed 1in from left, 1.5in from bottom
-    sig_rect = [72, 108, 252, 144]
+    sig_rect = [72, page_height - 730, 252, page_height - 694]
 
     sig_field = DictionaryObject({
         NameObject("/Type"):    NameObject("/Annot"),
