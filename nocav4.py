@@ -1107,10 +1107,20 @@ def generate_pdf():
     add_field(story, "City / State / ZIP", field("City/State/ZIP", la_app_csz))
     add_field(story, "Phone",           field("Phone", la_app_phone))
 
-    # Signature block
+    # Signature block — use a canvas callback to capture the exact Y position
+    sig_position = {}  # will be populated during build
+
+    class SigAnchor(Spacer):
+        """Zero-height flowable that records its drawn position."""
+        def draw(self):
+            sig_position["page"] = self.canv.getPageNumber()
+            sig_position["y"]    = self.canv._y
+            sig_position["x"]    = self.canv._currentPageSize[0]  # page width
+
     add_heading(story, "Signature of Lead Agency Representative")
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 6))
+    story.append(SigAnchor(0, 0))  # invisible anchor — records position here
 
     doc.build(story)
     buffer.seek(0)
@@ -1120,12 +1130,20 @@ def generate_pdf():
     writer = PdfWriter()
     writer.append(reader)
 
-    last_page = writer.pages[-1]
-    page_height = float(last_page.mediabox.height)
+    # Use the captured position; fall back to last page bottom if missing
+    sig_page_num = sig_position.get("page", len(writer.pages))
+    sig_y        = sig_position.get("y", 100)
+    sig_x        = sig_position.get("x", 612)
 
-    # Small signature box: 2.5in wide x 0.5in tall, top-left of signature area
-    # Placed 1in from left, 1.5in from bottom
-    sig_rect = [72, page_height - 730, 252, page_height - 694]
+    target_page = writer.pages[sig_page_num - 1]
+
+    # Box: left margin to ~3.5in wide, 0.5in tall, just below anchor point
+    box_left   = 72
+    box_right  = 324          # ~3.5 inches from left
+    box_top    = sig_y - 4    # just below the spacer
+    box_bottom = box_top - 36 # 0.5 inch tall
+
+    sig_rect = [box_left, box_bottom, box_right, box_top]
 
     sig_field = DictionaryObject({
         NameObject("/Type"):    NameObject("/Annot"),
@@ -1135,14 +1153,14 @@ def generate_pdf():
         NameObject("/TU"):      TextStringObject("Signature of Lead Agency Representative"),
         NameObject("/Rect"):    ArrayObject([NumberObject(x) for x in sig_rect]),
         NameObject("/F"):       NumberObject(4),
-        NameObject("/P"):       last_page.indirect_reference,
+        NameObject("/P"):       target_page.indirect_reference,
     })
 
     sig_obj = writer._add_object(sig_field)
 
-    if "/Annots" not in last_page:
-        last_page[NameObject("/Annots")] = ArrayObject()
-    last_page["/Annots"].append(sig_obj)
+    if "/Annots" not in target_page:
+        target_page[NameObject("/Annots")] = ArrayObject()
+    target_page["/Annots"].append(sig_obj)
 
     acroform = DictionaryObject({
         NameObject("/Fields"):   ArrayObject([sig_obj]),
