@@ -650,6 +650,34 @@ with col_end:
 
 st.divider()
 
+# ── SECTION: Lead Agency ──────────────────────────────────────────────────────
+
+st.subheader("Lead Agency")
+
+st.markdown("**Consulting Firm**")
+la_firm_name    = st.text_input("Consulting Firm", placeholder="e.g. SWCA Environmental Consultants", label_visibility="collapsed")
+la_firm_address = st.text_input("Address", placeholder="e.g. 1420 Harbor Bay Pkwy", key="la_firm_address")
+la_firm_csz     = st.text_input("City / State / ZIP", placeholder="e.g. Alameda, CA 94502", key="la_firm_csz")
+la_firm_contact = st.text_input("Contact", placeholder="e.g. Jane Smith", key="la_firm_contact")
+la_firm_phone   = st.text_input("Phone", placeholder="e.g. 510-555-0100", key="la_firm_phone")
+
+st.markdown("**Applicant**")
+la_app_name     = st.text_input("Applicant", placeholder="e.g. Pacific Solar LLC", label_visibility="collapsed")
+la_app_address  = st.text_input("Address", placeholder="e.g. 350 Market St", key="la_app_address")
+la_app_csz      = st.text_input("City / State / ZIP", placeholder="e.g. San Francisco, CA 94105", key="la_app_csz")
+la_app_phone    = st.text_input("Phone", placeholder="e.g. 415-555-0200", key="la_app_phone")
+
+st.divider()
+
+# ── SECTION: Signature ────────────────────────────────────────────────────────
+
+st.subheader("Signature of Lead Agency Representative")
+st.markdown("*This section will include a signature line on the generated PDF.*")
+
+sig_date = st.text_input("Date", placeholder="e.g. April 22, 2026", key="sig_date")
+
+st.divider()
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def field(label, value):
@@ -985,6 +1013,37 @@ def generate_pdf():
     end_str   = review_end.strftime("%B %d, %Y")   if review_end   else "[Not provided]"
     add_field(story, "Starting Date", start_str)
     add_field(story, "Ending Date",   end_str)
+
+    # Lead Agency
+    add_heading(story, "Lead Agency")
+    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
+    story.append(Spacer(1, 4))
+
+    story.append(Paragraph("Consulting Firm", heading_style))
+    add_field(story, "Firm Name",       field("Consulting Firm", la_firm_name))
+    add_field(story, "Address",         field("Address", la_firm_address))
+    add_field(story, "City / State / ZIP", field("City/State/ZIP", la_firm_csz))
+    add_field(story, "Contact",         field("Contact", la_firm_contact))
+    add_field(story, "Phone",           field("Phone", la_firm_phone))
+
+    story.append(Paragraph("Applicant", heading_style))
+    add_field(story, "Applicant Name",  field("Applicant", la_app_name))
+    add_field(story, "Address",         field("Address", la_app_address))
+    add_field(story, "City / State / ZIP", field("City/State/ZIP", la_app_csz))
+    add_field(story, "Phone",           field("Phone", la_app_phone))
+
+    # Signature block
+    add_heading(story, "Signature of Lead Agency Representative")
+    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
+    story.append(Spacer(1, 24))
+
+    # Wet signature line — long underscore spanning most of the page
+    story.append(HRFlowable(width=4.5*inch, thickness=1, color=colors.black, spaceAfter=4))
+    story.append(Paragraph("Signature", label_style))
+    story.append(Spacer(1, 16))
+
+    sig_date_val = sig_date.strip() if sig_date and sig_date.strip() else "________________"
+    story.append(Paragraph(f"Date: {sig_date_val}", value_style))
 
     doc.build(story)
     buffer.seek(0)
