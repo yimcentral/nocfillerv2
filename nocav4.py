@@ -284,6 +284,24 @@ with col2:
 
 total_acres = st.text_input("Total Acres", placeholder="e.g. 4,200")
 
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    assessor_parcel = st.text_input("Assessor Parcel No.", placeholder="e.g. 0141-030-090")
+with col2:
+    section = st.text_input("Section", placeholder="e.g. 1")
+with col3:
+    township = st.text_input("Township", placeholder="e.g. 6N")
+with col4:
+    range_ = st.text_input("Range", placeholder="e.g. 1W")
+
+col1, col2 = st.columns(2)
+with col1:
+    state_highways = st.text_input("State Highways (within 2 miles)", placeholder="e.g. I-505, I-80")
+    railways       = st.text_input("Railways", placeholder="e.g. Union Pacific")
+with col2:
+    airports = st.text_input("Airports", placeholder="e.g. Nut Tree Airport")
+    schools  = st.text_input("Schools", placeholder="e.g. Blake Austin College")
+
 st.divider()
 
 # ── SECTION: Document Type ────────────────────────────────────────────────────
@@ -833,6 +851,18 @@ def generate_pdf():
                 else "[Coordinates not provided]")
     add_field(story, "Longitude / Latitude", lat_long)
     add_field(story, "Total Acres",          field("Total Acres", total_acres))
+    def val_or_na(v):
+        return v.strip() if v and v.strip() else "N/A"
+
+    add_field(story, "Assessor Parcel No.",  val_or_na(assessor_parcel))
+
+    sec_str = f"Section: {val_or_na(section)}  |  Township: {val_or_na(township)}  |  Range: {val_or_na(range_)}"
+    add_field(story, "Survey Info", sec_str)
+
+    add_field(story, "State Highways (within 2 miles)", val_or_na(state_highways))
+    add_field(story, "Airports",  val_or_na(airports))
+    add_field(story, "Railways",  val_or_na(railways))
+    add_field(story, "Schools",   val_or_na(schools))
 
     # Document Type
     ceqa_items = {
