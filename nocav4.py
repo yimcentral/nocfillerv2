@@ -151,6 +151,13 @@ def preset_date(preset, key):
         return None
     return parse_date_value(preset.get(key))
 
+FIELD_KEY_MAP = {
+    "county": "project_county",
+    "city": "project_city",
+    "zip": "project_zip",
+}
+
+
 def apply_preset_to_session(project_title):
     preset = PRESETS.get(project_title, {})
     if st.session_state.get("_loaded_project_title") == project_title:
@@ -161,17 +168,18 @@ def apply_preset_to_session(project_title):
     for key, value in preset.items():
         if key == "project_title":
             continue
+        target_key = FIELD_KEY_MAP.get(key, key)
         if key in BOOLEAN_FIELDS:
-            st.session_state[key] = parse_bool(value, False)
+            st.session_state[target_key] = parse_bool(value, False)
         elif key in DATE_FIELDS:
             parsed_date = parse_date_value(value)
-            st.session_state[key] = parsed_date
+            st.session_state[target_key] = parsed_date
             if key == "review_start":
                 st.session_state.date_start = parsed_date
             elif key == "review_end":
                 st.session_state.date_end = parsed_date
         else:
-            st.session_state[key] = clean_scalar(value, "")
+            st.session_state[target_key] = clean_scalar(value, "")
     if clean_scalar(preset.get("contact_name"), ""):
         st.session_state["contact_name"] = clean_scalar(preset.get("contact_name"), "")
     st.session_state["_loaded_project_title"] = project_title
@@ -391,12 +399,12 @@ st.subheader("Project Location")
 
 col1, col2 = st.columns(2)
 with col1:
-    project_county = st.text_input("County", placeholder="e.g. Kern", value=preset_val(preset, "county"), key="project_county")
+    project_county = st.text_input("County", placeholder="e.g. Kern", key="project_county")
     cross_streets = st.text_input("Cross Streets", placeholder="e.g. Hwy 58 & Wind Farm Rd", value=preset_val(preset, "cross_streets"), key="cross_streets")
     latitude = st.text_input("Latitude", placeholder="e.g. 35° 21' 14\" N", value=preset_val(preset, "latitude"), key="latitude")
 with col2:
-    project_city = st.text_input("City / Nearest Community", placeholder="e.g. Mojave", value=preset_val(preset, "city"), key="project_city")
-    project_zip = st.text_input("ZIP Code", placeholder="e.g. 93501", value=preset_val(preset, "zip"), key="project_zip")
+    project_city = st.text_input("City / Nearest Community", placeholder="e.g. Mojave", key="project_city")
+    project_zip = st.text_input("ZIP Code", placeholder="e.g. 93501", key="project_zip")
     longitude = st.text_input("Longitude", placeholder="e.g. 118° 09' 22\" W", value=preset_val(preset, "longitude"), key="longitude")
 
 total_acres = st.text_input("Total Acres", placeholder="e.g. 4,200", value=preset_val(preset, "total_acres"), key="total_acres")
