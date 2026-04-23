@@ -13,7 +13,7 @@ import streamlit as st
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle, Image, Flowable
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
 from reportlab.platypus.doctemplate import IndexingFlowable
@@ -24,6 +24,29 @@ from pypdf.generic import (
 )
 
 LOGO_PATH = "cec_logo.png"
+
+
+class SignatureAnchor(Flowable):
+    """Invisible flowable that records the exact page/y position for the signature field."""
+    def __init__(self, key="signature"):
+        super().__init__()
+        self.key = key
+        self.width = 0
+        self.height = 0
+
+    def wrap(self, availWidth, availHeight):
+        return (0, 0)
+
+    def draw(self):
+        canvas = self.canv
+        if not hasattr(canvas, "_field_positions"):
+            canvas._field_positions = {}
+        canvas._field_positions[self.key] = {
+            "page": canvas.getPageNumber(),
+            "x": float(canvas._leftMargin),
+            "y": float(canvas._curr_y),
+        }
+
 
 # ── Prepopulated data ─────────────────────────────────────────────────────────
 
@@ -1040,41 +1063,53 @@ def generate_pdf():
     add_heading(story, "Signature of Lead Agency Representative")
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
     story.append(Spacer(1, 8))
+    story.append(SignatureAnchor("signature"))
+    story.append(Spacer(1, 42))
 
     doc.build(story)
     buffer.seek(0)
 
     # ── Inject AcroForm signature field via pypdf ─────────────────────────────
+    anchor = getattr(doc.canv, "_field_positions", {}).get("signature")
+
     reader = PdfReader(buffer)
     writer = PdfWriter()
     writer.append(reader)
 
-    last_page = writer.pages[-1]
-    page_height = float(last_page.mediabox.height)
+    if anchor:
+        page_index = max(0, min(int(anchor["page"]) - 1, len(writer.pages) - 1))
+        target_page = writer.pages[page_index]
+        page_height = float(target_page.mediabox.height)
 
-    # Small signature box: 2.5in wide x 0.5in tall, top-left of signature area
-    # Placed 1in from left, 1.5in from bottom
-    sig_rect = [72, page_height - 730, 252, page_height - 694]
+        sig_left = float(anchor["x"])
+        sig_top_from_top = float(anchor["y"]) + 6
+        sig_width = 2.5 * inch
+        sig_height = 0.5 * inch
+        sig_bottom = page_height - sig_top_from_top - sig_height
+        sig_top = sig_bottom + sig_height
+        sig_rect = [sig_left, sig_bottom, sig_left + sig_width, sig_top]
 
-    sig_field = DictionaryObject({
-        NameObject("/Type"):    NameObject("/Annot"),
-        NameObject("/Subtype"): NameObject("/Widget"),
-        NameObject("/FT"):      NameObject("/Sig"),
-        NameObject("/T"):       TextStringObject("Signature1"),
-        NameObject("/TU"):      TextStringObject("Signature of Lead Agency Representative"),
-        NameObject("/Rect"):    ArrayObject([NumberObject(x) for x in sig_rect]),
-        NameObject("/F"):       NumberObject(4),
-        NameObject("/P"):       last_page.indirect_reference,
-    })
+        sig_field = DictionaryObject({
+            NameObject("/Type"):    NameObject("/Annot"),
+            NameObject("/Subtype"): NameObject("/Widget"),
+            NameObject("/FT"):      NameObject("/Sig"),
+            NameObject("/T"):       TextStringObject("Signature1"),
+            NameObject("/TU"):      TextStringObject("Signature of Lead Agency Representative"),
+            NameObject("/Rect"):    ArrayObject([NumberObject(x) for x in sig_rect]),
+            NameObject("/F"):       NumberObject(4),
+            NameObject("/P"):       target_page.indirect_reference,
+        })
 
-    sig_obj = writer._add_object(sig_field)
+        sig_obj = writer._add_object(sig_field)
 
-    if "/Annots" not in last_page:
-        last_page[NameObject("/Annots")] = ArrayObject()
-    last_page["/Annots"].append(sig_obj)
+        if "/Annots" not in target_page:
+            target_page[NameObject("/Annots")] = ArrayObject()
+        target_page["/Annots"].append(sig_obj)
+    else:
+        sig_obj = None
 
     acroform = DictionaryObject({
-        NameObject("/Fields"):   ArrayObject([sig_obj]),
+        NameObject("/Fields"):   ArrayObject([sig_obj] if sig_obj else []),
         NameObject("/SigFlags"): NumberObject(3),
     })
     writer._root_object[NameObject("/AcroForm")] = acroform
