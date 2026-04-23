@@ -603,7 +603,7 @@ st.divider()
 
 st.subheader("Local Public Review Period")
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 def next_business_day(d):
     while d.weekday() >= 5:
@@ -611,7 +611,9 @@ def next_business_day(d):
     return d
 
 def set_today():
-    st.session_state.date_start = date.today()
+    import zoneinfo
+    today_pt = datetime.now(zoneinfo.ZoneInfo("America/Los_Angeles")).date()
+    st.session_state.date_start = today_pt
 
 def set_plus_30():
     start = st.session_state.get("date_start")
