@@ -13,7 +13,7 @@ import streamlit as st
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle, Image, Flowable
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle, Image
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
 from reportlab.platypus.doctemplate import IndexingFlowable
@@ -24,30 +24,6 @@ from pypdf.generic import (
 )
 
 LOGO_PATH = "cec_logo.png"
-
-
-class SignatureAnchor(Flowable):
-    """Invisible flowable that records the exact placed page/x/y position for the signature field."""
-    def __init__(self, key="signature"):
-        super().__init__()
-        self.key = key
-        self.width = 0
-        self.height = 0
-
-    def wrap(self, availWidth, availHeight):
-        return (0, 0)
-
-    def draw(self):
-        canvas = self.canv
-        if not hasattr(canvas, "_field_positions"):
-            canvas._field_positions = {}
-        abs_x, abs_y = canvas.absolutePosition(0, 0)
-        canvas._field_positions[self.key] = {
-            "page": canvas.getPageNumber(),
-            "x": float(abs_x),
-            "y": float(abs_y),
-        }
-
 
 # ── Prepopulated data ─────────────────────────────────────────────────────────
 
@@ -536,16 +512,53 @@ if dev_nonpower:
 st.divider()
 
 # ── SECTION: Project Issues ───────────────────────────────────────────────────
-
 st.subheader("Project Issues Discussed in Document")
 
-col1, col2 = st.columns(2)
-with col1:
-    issue_air  = st.checkbox("Air Quality")
-    issue_land = st.checkbox("Land Use")
-with col2:
-    issue_traffic = st.checkbox("Traffic")
-    issue_tribal  = st.checkbox("Tribal Cultural Resources")
+c1, c2, c3, c4 = st.columns(4)
+with c1:
+    issue_aesthetic_visual = st.checkbox("Aesthetic/Visual", value=True)
+    issue_agricultural_land = st.checkbox("Agricultural Land", value=True)
+    issue_air_quality = st.checkbox("Air Quality", value=True)
+    issue_archeological_historical = st.checkbox("Archeological/Historical", value=True)
+    issue_biological_resources = st.checkbox("Biological Resources", value=True)
+    issue_coastal_zone = st.checkbox("Coastal Zone", value=False)
+    issue_cumulative_effects = st.checkbox("Cumulative Effects", value=True)
+    issue_drainage_absorption = st.checkbox("Drainage/Absorption", value=True)
+    issue_economic_jobs = st.checkbox("Economic/Jobs", value=True)
+with c2:
+    issue_energy = st.checkbox("Energy", value=True)
+    issue_fiscal = st.checkbox("Fiscal", value=False)
+    issue_flood_plain_flooding = st.checkbox("Flood Plain/Flooding", value=True)
+    issue_forest_land_fire_hazard = st.checkbox("Forest Land/Fire Hazard", value=True)
+    issue_geologic_seismic = st.checkbox("Geologic/Seismic", value=True)
+    issue_greenhouse_gas_emissions = st.checkbox("Greenhouse Gas Emissions", value=True)
+    issue_growth_inducement = st.checkbox("Growth Inducement", value=False)
+    issue_land_use = st.checkbox("Land Use", value=True)
+    issue_minerals = st.checkbox("Minerals", value=True)
+with c3:
+    issue_noise = st.checkbox("Noise", value=True)
+    issue_other = st.checkbox("Other", value=True)
+    issue_population_housing_balance = st.checkbox("Population/Housing Balance", value=True)
+    issue_public_services_facilities = st.checkbox("Public Services/Facilities", value=True)
+    issue_recreation_parks = st.checkbox("Recreation/Parks", value=True)
+    issue_schools_universities = st.checkbox("Schools/Universities", value=False)
+    issue_septic_systems = st.checkbox("Septic Systems", value=False)
+    issue_sewer_capacity = st.checkbox("Sewer Capacity", value=False)
+    issue_soil_erosion_compaction_grading = st.checkbox("Soil Erosion/Compaction/Grading", value=True)
+with c4:
+    issue_solid_waste = st.checkbox("Solid Waste", value=True)
+    issue_toxic_hazardous = st.checkbox("Toxic/Hazardous", value=True)
+    issue_traffic_circulation = st.checkbox("Traffic/Circulation", value=True)
+    issue_tribal_cultural_resources = st.checkbox("Tribal Cultural Resources", value=True)
+    issue_vegetation = st.checkbox("Vegetation", value=False)
+    issue_water_quality = st.checkbox("Water Quality", value=True)
+    issue_water_supply_groundwater = st.checkbox("Water Supply/Groundwater", value=True)
+    issue_wetland_riparian = st.checkbox("Wetland/Riparian", value=True)
+
+issue_other_text = ""
+if issue_other:
+    issue_other_text = st.text_input("Other Issue (specify)", placeholder="Describe other issue")
+
 
 st.divider()
 
@@ -947,9 +960,43 @@ def generate_pdf():
 
     # Project Issues
     issues_checked = {
-        "Air Quality": issue_air, "Traffic": issue_traffic,
-        "Land Use": issue_land, "Tribal Cultural Resources": issue_tribal,
+        "Aesthetic/Visual": issue_aesthetic_visual,
+        "Agricultural Land": issue_agricultural_land,
+        "Air Quality": issue_air_quality,
+        "Archeological/Historical": issue_archeological_historical,
+        "Biological Resources": issue_biological_resources,
+        "Coastal Zone": issue_coastal_zone,
+        "Cumulative Effects": issue_cumulative_effects,
+        "Drainage/Absorption": issue_drainage_absorption,
+        "Economic/Jobs": issue_economic_jobs,
+        "Energy": issue_energy,
+        "Fiscal": issue_fiscal,
+        "Flood Plain/Flooding": issue_flood_plain_flooding,
+        "Forest Land/Fire Hazard": issue_forest_land_fire_hazard,
+        "Geologic/Seismic": issue_geologic_seismic,
+        "Greenhouse Gas Emissions": issue_greenhouse_gas_emissions,
+        "Growth Inducement": issue_growth_inducement,
+        "Land Use": issue_land_use,
+        "Minerals": issue_minerals,
+        "Noise": issue_noise,
+        "Population/Housing Balance": issue_population_housing_balance,
+        "Public Services/Facilities": issue_public_services_facilities,
+        "Recreation/Parks": issue_recreation_parks,
+        "Schools/Universities": issue_schools_universities,
+        "Septic Systems": issue_septic_systems,
+        "Sewer Capacity": issue_sewer_capacity,
+        "Soil Erosion/Compaction/Grading": issue_soil_erosion_compaction_grading,
+        "Solid Waste": issue_solid_waste,
+        "Toxic/Hazardous": issue_toxic_hazardous,
+        "Traffic/Circulation": issue_traffic_circulation,
+        "Tribal Cultural Resources": issue_tribal_cultural_resources,
+        "Vegetation": issue_vegetation,
+        "Water Quality": issue_water_quality,
+        "Water Supply/Groundwater": issue_water_supply_groundwater,
+        "Wetland/Riparian": issue_wetland_riparian,
     }
+    if issue_other and issue_other_text.strip():
+        issues_checked[f"Other: {issue_other_text.strip()}"] = True
     if any(issues_checked.values()):
         add_heading(story, "Project Issues Discussed in Document")
         story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
@@ -1064,58 +1111,41 @@ def generate_pdf():
     add_heading(story, "Signature of Lead Agency Representative")
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
     story.append(Spacer(1, 8))
-    story.append(SignatureAnchor("signature"))
-    story.append(Spacer(1, 42))
 
     doc.build(story)
     buffer.seek(0)
 
     # ── Inject AcroForm signature field via pypdf ─────────────────────────────
-    anchor = getattr(doc.canv, "_field_positions", {}).get("signature")
-
     reader = PdfReader(buffer)
     writer = PdfWriter()
     writer.append(reader)
 
-    if anchor:
-        page_index = max(0, min(int(anchor["page"]) - 1, len(writer.pages) - 1))
-        target_page = writer.pages[page_index]
-        page_height = float(target_page.mediabox.height)
+    last_page = writer.pages[-1]
+    page_height = float(last_page.mediabox.height)
 
-        sig_left = float(anchor["x"])
-        anchor_y = float(anchor["y"])
-        sig_width = 2.5 * inch
-        sig_height = 0.5 * inch
-        sig_gap = 2
+    # Small signature box: 2.5in wide x 0.5in tall, top-left of signature area
+    # Placed 1in from left, 1.5in from bottom
+    sig_rect = [72, page_height - 730, 252, page_height - 694]
 
-        # anchor_y from canvas.absolutePosition is already in PDF coordinates
-        # (origin at bottom-left). Place the signature field *below* the anchor,
-        # not by converting it again from the top of the page.
-        sig_top = anchor_y - sig_gap
-        sig_bottom = sig_top - sig_height
-        sig_rect = [sig_left, sig_bottom, sig_left + sig_width, sig_top]
+    sig_field = DictionaryObject({
+        NameObject("/Type"):    NameObject("/Annot"),
+        NameObject("/Subtype"): NameObject("/Widget"),
+        NameObject("/FT"):      NameObject("/Sig"),
+        NameObject("/T"):       TextStringObject("Signature1"),
+        NameObject("/TU"):      TextStringObject("Signature of Lead Agency Representative"),
+        NameObject("/Rect"):    ArrayObject([NumberObject(x) for x in sig_rect]),
+        NameObject("/F"):       NumberObject(4),
+        NameObject("/P"):       last_page.indirect_reference,
+    })
 
-        sig_field = DictionaryObject({
-            NameObject("/Type"):    NameObject("/Annot"),
-            NameObject("/Subtype"): NameObject("/Widget"),
-            NameObject("/FT"):      NameObject("/Sig"),
-            NameObject("/T"):       TextStringObject("Signature1"),
-            NameObject("/TU"):      TextStringObject("Signature of Lead Agency Representative"),
-            NameObject("/Rect"):    ArrayObject([NumberObject(x) for x in sig_rect]),
-            NameObject("/F"):       NumberObject(4),
-            NameObject("/P"):       target_page.indirect_reference,
-        })
+    sig_obj = writer._add_object(sig_field)
 
-        sig_obj = writer._add_object(sig_field)
-
-        if "/Annots" not in target_page:
-            target_page[NameObject("/Annots")] = ArrayObject()
-        target_page["/Annots"].append(sig_obj)
-    else:
-        sig_obj = None
+    if "/Annots" not in last_page:
+        last_page[NameObject("/Annots")] = ArrayObject()
+    last_page["/Annots"].append(sig_obj)
 
     acroform = DictionaryObject({
-        NameObject("/Fields"):   ArrayObject([sig_obj] if sig_obj else []),
+        NameObject("/Fields"):   ArrayObject([sig_obj]),
         NameObject("/SigFlags"): NumberObject(3),
     })
     writer._root_object[NameObject("/AcroForm")] = acroform
