@@ -537,7 +537,7 @@ with c2:
     issue_minerals = st.checkbox("Minerals", value=True)
 with c3:
     issue_noise = st.checkbox("Noise", value=True)
-    issue_other = st.checkbox("Other", value=True)
+    issue_other = st.checkbox("Other", value=False)
     issue_population_housing_balance = st.checkbox("Population/Housing Balance", value=True)
     issue_public_services_facilities = st.checkbox("Public Services/Facilities", value=True)
     issue_recreation_parks = st.checkbox("Recreation/Parks", value=True)
