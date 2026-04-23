@@ -15,8 +15,6 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle, Image
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_LEFT
-from reportlab.platypus.doctemplate import IndexingFlowable
 
 LOGO_PATH = "cec_logo.png"
 
@@ -612,9 +610,6 @@ def checked_list(options_dict):
 
 def generate_pdf():
     buffer = io.BytesIO()
-
-    PDF_TITLE = "Notice of Completion & Environmental Document Transmittal"
-
     doc = SimpleDocTemplate(
         buffer,
         pagesize=letter,
@@ -622,33 +617,21 @@ def generate_pdf():
         leftMargin=inch,
         topMargin=inch,
         bottomMargin=inch,
-        title=PDF_TITLE,
+        title="Notice of Completion & Environmental Document Transmittal",
         author="California Energy Commission",
-        subject="CEQA/NEPA Environmental Document Transmittal",
-        creator="California Energy Commission NOC Generator",
     )
 
     styles = getSampleStyleSheet()
 
-    # H1 — document title (used once, sets PDF heading structure)
     title_style = ParagraphStyle(
-        "FormTitle",
-        parent=styles["Heading1"],
-        fontSize=14,
-        spaceAfter=4,
+        "FormTitle", parent=styles["Heading1"],
+        fontSize=14, spaceAfter=4,
         textColor=colors.HexColor("#003366"),
-        # outlineLevel=0 marks this as H1 in the PDF tag tree
-        outlineLevel=0,
     )
-    # H2 — section headings
     heading_style = ParagraphStyle(
-        "SectionHeading",
-        parent=styles["Heading2"],
-        fontSize=11,
-        spaceBefore=14,
-        spaceAfter=4,
+        "SectionHeading", parent=styles["Heading2"],
+        fontSize=11, spaceBefore=14, spaceAfter=4,
         textColor=colors.HexColor("#003366"),
-        outlineLevel=1,
     )
     label_style = ParagraphStyle(
         "Label", parent=styles["Normal"],
@@ -663,11 +646,6 @@ def generate_pdf():
         story.append(Paragraph(label, label_style))
         story.append(Paragraph(value, value_style))
 
-    def add_heading(story, text, level="h2"):
-        """Add a semantically tagged heading and a visual rule."""
-        style = title_style if level == "h1" else heading_style
-        story.append(Paragraph(text, style))
-
     def add_checked(story, label, options_dict):
         result = checked_list(options_dict)
         if result:
@@ -676,7 +654,7 @@ def generate_pdf():
 
     story = []
 
-    # Header — H1 title block
+    # Header
     title_block = [
         Paragraph("California Energy Commission", label_style),
         Paragraph("Notice of Completion &amp; Environmental Document Transmittal", title_style),
@@ -701,7 +679,7 @@ def generate_pdf():
     add_field(story, "SCH Number", field("SCH Number", sch_number))
 
     # Overview
-    add_heading(story, "Overview")
+    story.append(Paragraph("Overview", heading_style))
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
     story.append(Spacer(1, 4))
     add_field(story, "Project Title",    field("Project Title", project_title))
@@ -714,7 +692,7 @@ def generate_pdf():
     add_field(story, "County",           "Sacramento")
 
     # Project Location
-    add_heading(story, "Project Location")
+    story.append(Paragraph("Project Location", heading_style))
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
     story.append(Spacer(1, 4))
     add_field(story, "County",                  field("County", project_county))
@@ -753,7 +731,7 @@ def generate_pdf():
                     (other_section and any(other_items.values())))
 
     if has_doc_type:
-        add_heading(story, "Document Type")
+        story.append(Paragraph("Document Type", heading_style))
         story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
         story.append(Spacer(1, 4))
         add_checked(story, "CEQA", ceqa_items)
@@ -786,7 +764,7 @@ def generate_pdf():
         lat_items[f"Other: {lat_other_text.strip()}"] = True
 
     if any(lat_items.values()):
-        add_heading(story, "Local Action Type")
+        story.append(Paragraph("Local Action Type", heading_style))
         story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
         story.append(Spacer(1, 4))
         add_checked(story, "Local Action Type", lat_items)
@@ -794,7 +772,7 @@ def generate_pdf():
     # Development Type
     has_dev = (dev_power or dev_nonpower)
     if has_dev:
-        add_heading(story, "Development Type")
+        story.append(Paragraph("Development Type", heading_style))
         story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
         story.append(Spacer(1, 4))
 
@@ -844,24 +822,24 @@ def generate_pdf():
         "Land Use": issue_land, "Tribal Cultural Resources": issue_tribal,
     }
     if any(issues_checked.values()):
-        add_heading(story, "Project Issues Discussed in Document")
+        story.append(Paragraph("Project Issues Discussed in Document", heading_style))
         story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
         story.append(Spacer(1, 4))
         add_checked(story, "Issues", issues_checked)
 
     # Land Use & Description
-    add_heading(story, "Present Land Use / Zoning / GP Designation")
+    story.append(Paragraph("Present Land Use / Zoning / GP Designation", heading_style))
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
     story.append(Spacer(1, 4))
     add_field(story, "Land Use / Zoning / GP Designation", field("Land Use", land_use))
 
-    add_heading(story, "Project Description")
+    story.append(Paragraph("Project Description", heading_style))
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
     story.append(Spacer(1, 4))
     add_field(story, "Description", field("Project Description", project_description))
 
     # Reviewing Agencies Checklist
-    add_heading(story, "Reviewing Agencies Checklist")
+    story.append(Paragraph("Reviewing Agencies Checklist", heading_style))
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
     story.append(Spacer(1, 4))
 
