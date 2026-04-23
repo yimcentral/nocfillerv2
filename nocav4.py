@@ -373,8 +373,12 @@ contact_options = [""] + list(CONTACTS.keys())
 contact_index = contact_options.index(preset_contact) if preset_contact in contact_options else 0
 contact_name = st.selectbox("Contact Person", options=contact_options, index=contact_index, key="contact_name")
 
-preset_phone = CONTACTS.get(contact_name, "")
-st.text_input("Phone", value=preset_phone, key="phone_display", disabled=True, help="Auto-filled based on contact or project selection")
+phone_number = st.text_input(
+    "Phone",
+    value=preset_val(preset, "phone"),
+    key="phone",
+    help="Imported from the selected project in the ODS"
+)
 
 preset_sch = preset_val(preset, "sch_number")
 sch_number = st.text_input("SCH Number", value=preset_val(preset, "sch_number"), placeholder="e.g. 2024010001", key="sch_number")
@@ -957,7 +961,7 @@ def generate_pdf():
     add_field(story, "Lead Agency",      "California Energy Commission")
     add_field(story, "Project Manager",  field("Contact Person", contact_name))
     add_field(story, "Mailing Address",  "715 P St, MS 40")
-    add_field(story, "Phone",            field("Phone", preset_phone))
+    add_field(story, "Phone",            field("Phone", phone_number))
     add_field(story, "City",             "Sacramento")
     add_field(story, "ZIP",              "95814")
     add_field(story, "County",           "Sacramento")
