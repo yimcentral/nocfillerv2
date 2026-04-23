@@ -1040,9 +1040,7 @@ def generate_pdf():
     # Signature block — placeholder space; AcroForm field injected below
     add_heading(story, "Signature of Lead Agency Representative")
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
-    story.append(Spacer(1, 8))
-    story.append(Paragraph("(Sign below in Adobe Acrobat)", label_style))
-    story.append(Spacer(1, 72))  # vertical space reserved for signature field
+    story.append(Spacer(1, 48))  # vertical space reserved for signature field
 
     sig_date_val = sig_date.strip() if sig_date and sig_date.strip() else "________________"
     story.append(Paragraph(f"Date: {sig_date_val}", value_style))
@@ -1062,7 +1060,7 @@ def generate_pdf():
     # Signature box: left-aligned, near bottom of last page
     # PDF coords are bottom-left origin so we place it in the lower portion
     margin = 72  # 1 inch
-    sig_rect = [margin, 148, page_width - margin, 210]
+    sig_rect = [margin, 180, margin + 300, 230]
 
     sig_field = DictionaryObject({
         NameObject("/Type"):    NameObject("/Annot"),
