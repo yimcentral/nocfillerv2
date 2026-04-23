@@ -605,46 +605,46 @@ st.subheader("Local Public Review Period")
 
 from datetime import date, timedelta
 
-if "review_start" not in st.session_state:
-    st.session_state.review_start = None
-if "review_end" not in st.session_state:
-    st.session_state.review_end = None
-
 def next_business_day(d):
-    """Roll d forward to Monday if it lands on a weekend."""
-    while d.weekday() >= 5:  # 5=Saturday, 6=Sunday
+    while d.weekday() >= 5:
         d += timedelta(days=1)
     return d
+
+def set_today():
+    st.session_state.date_start = date.today()
+
+def set_plus_30():
+    start = st.session_state.get("date_start")
+    if start:
+        raw_end = start + timedelta(days=30)
+        st.session_state.date_end = next_business_day(raw_end)
+
+if "date_start" not in st.session_state:
+    st.session_state.date_start = None
+if "date_end" not in st.session_state:
+    st.session_state.date_end = None
 
 col_start, col_end = st.columns(2)
 
 with col_start:
     st.markdown("**Starting Date**")
-    if st.button("Today", key="btn_today"):
-        st.session_state.review_start = date.today()
+    st.button("Today", key="btn_today", on_click=set_today)
     review_start = st.date_input(
         "Starting Date",
-        value=st.session_state.review_start,
+        value=st.session_state.date_start,
         label_visibility="collapsed",
         key="date_start",
     )
-    st.session_state.review_start = review_start
 
 with col_end:
     st.markdown("**Ending Date**")
-    if st.button("+30 Days", key="btn_30"):
-        if st.session_state.review_start:
-            raw_end = st.session_state.review_start + timedelta(days=30)
-            st.session_state.review_end = next_business_day(raw_end)
-        else:
-            st.warning("Please set a Starting Date first.")
+    st.button("+30 Days", key="btn_30", on_click=set_plus_30)
     review_end = st.date_input(
         "Ending Date",
-        value=st.session_state.review_end,
+        value=st.session_state.date_end,
         label_visibility="collapsed",
         key="date_end",
     )
-    st.session_state.review_end = review_end
 
 st.divider()
 
