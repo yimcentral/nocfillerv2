@@ -677,9 +677,8 @@ st.divider()
 # ── SECTION: Signature ────────────────────────────────────────────────────────
 
 st.subheader("Signature of Lead Agency Representative")
-st.markdown("*This section will include a signature line on the generated PDF.*")
-
-sig_date = st.text_input("Date", placeholder="e.g. April 22, 2026", key="sig_date")
+st.caption("A signature field will appear in the generated PDF for signing in Adobe Acrobat.")
+sig_date = ""
 
 st.divider()
 
@@ -1037,13 +1036,10 @@ def generate_pdf():
     add_field(story, "City / State / ZIP", field("City/State/ZIP", la_app_csz))
     add_field(story, "Phone",           field("Phone", la_app_phone))
 
-    # Signature block — placeholder space; AcroForm field injected below
+    # Signature block
     add_heading(story, "Signature of Lead Agency Representative")
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
-    story.append(Spacer(1, 48))  # vertical space reserved for signature field
-
-    sig_date_val = sig_date.strip() if sig_date and sig_date.strip() else "________________"
-    story.append(Paragraph(f"Date: {sig_date_val}", value_style))
+    story.append(Spacer(1, 60))
 
     doc.build(story)
     buffer.seek(0)
@@ -1055,12 +1051,10 @@ def generate_pdf():
 
     last_page = writer.pages[-1]
     page_height = float(last_page.mediabox.height)
-    page_width  = float(last_page.mediabox.width)
 
-    # Signature box: left-aligned, near bottom of last page
-    # PDF coords are bottom-left origin so we place it in the lower portion
-    margin = 72  # 1 inch
-    sig_rect = [margin, 180, margin + 300, 230]
+    # Small signature box: 2.5in wide x 0.5in tall, top-left of signature area
+    # Placed 1in from left, 1.5in from bottom
+    sig_rect = [72, 108, 252, 144]
 
     sig_field = DictionaryObject({
         NameObject("/Type"):    NameObject("/Annot"),
