@@ -1115,7 +1115,7 @@ def generate_pdf():
         def draw(self):
             sig_position["page"] = self.canv.getPageNumber()
             sig_position["y"]    = self.canv._y
-            sig_position["x"]    = self.canv._currentPageSize[0]  # page width
+            sig_position["x"]    = self.canv._pagesize[0]  # page width
 
     add_heading(story, "Signature of Lead Agency Representative")
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
