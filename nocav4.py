@@ -9,6 +9,7 @@ To run:
 
 import io
 import os
+import base64
 import streamlit as st
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -1395,13 +1396,34 @@ def generate_pdf():
 
 # ── Generate button ───────────────────────────────────────────────────────────
 
+def validate_required_agency_numbers():
+    errors = []
+    if ra_caltrans_dist and not clean_scalar(ra_caltrans_dist_n, ""):
+        errors.append("Caltrans District Number is required when Caltrans District #n is checked.")
+    if ra_fish and not clean_scalar(ra_fish_n, ""):
+        errors.append("Fish & Game Region Number is required when Fish & Game Region #n is checked.")
+    if ra_wqcb and not clean_scalar(ra_wqcb_n, ""):
+        errors.append("Regional WQCB Number is required when Regional WQCB #n is checked.")
+    return errors
+
 if st.button("Generate PDF", type="primary", use_container_width=True):
+    validation_errors = validate_required_agency_numbers()
+    if validation_errors:
+        for msg in validation_errors:
+            st.error(msg)
+        st.stop()
+
     pdf_buffer = generate_pdf()
-    st.success("PDF generated — only checked items will appear in the document.")
-    st.download_button(
-        label="Download Notice of Completion PDF",
-        data=pdf_buffer,
-        file_name="notice_of_completion.pdf",
-        mime="application/pdf",
-        use_container_width=True,
-    )
+    pdf_bytes = pdf_buffer.getvalue()
+    b64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
+    st.success("PDF generated — download should begin automatically.")
+    auto_download_html = f"""
+        <a id="auto-download-link" href="data:application/pdf;base64,{b64_pdf}" download="notice_of_completion.pdf"></a>
+        <script>
+        const link = document.getElementById("auto-download-link");
+        if (link) {{
+            link.click();
+        }}
+        </script>
+    """
+    st.markdown(auto_download_html, unsafe_allow_html=True)
