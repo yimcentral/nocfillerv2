@@ -9,7 +9,6 @@ To run:
 
 import io
 import os
-import base64
 import streamlit as st
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -67,14 +66,10 @@ DATE_FIELDS = {"review_start", "review_end"}
 
 HEADER_ALIASES = {
     "county": "county",
-    "projectcounty": "county",
     "project_county": "county",
     "city": "city",
-    "projectcity": "city",
     "project_city": "city",
     "zip": "zip",
-    "zipcode": "zip",
-    "projectzip": "zip",
     "project_zip": "zip",
     "latgpu": "lat_gpu",
     "latgpa": "lat_gpa",
@@ -102,25 +97,6 @@ HEADER_ALIASES = {
     "laappaddress": "la_app_address",
     "laappcsz": "la_app_csz",
     "laappphone": "la_app_phone",
-    # Reviewing agency number variants from ODS exports / hand-edited sheets.
-    "racaltransdistn": "ra_caltrans_dist_n",
-    "racaltransdistrictn": "ra_caltrans_dist_n",
-    "racaltransdistrictnumber": "ra_caltrans_dist_n",
-    "racaltransdistrictnum": "ra_caltrans_dist_n",
-    "racaltransdistnumber": "ra_caltrans_dist_n",
-    "rafishn": "ra_fish_n",
-    "rafishgameregionn": "ra_fish_n",
-    "rafishgameregionn": "ra_fish_n",
-    "rafishgameregionnumber": "ra_fish_n",
-    "rafishandgamen": "ra_fish_n",
-    "rafishandgameregionn": "ra_fish_n",
-    "rafishandgameregionnumber": "ra_fish_n",
-    "rawqcbn": "ra_wqcb_n",
-    "rarwqcbn": "ra_wqcb_n",
-    "raregionalwqcbn": "ra_wqcb_n",
-    "raregionalwqcbnumber": "ra_wqcb_n",
-    "raregionalrwqcbn": "ra_wqcb_n",
-    "raregionalrwqcbnumber": "ra_wqcb_n",
 }
 
 
@@ -152,19 +128,6 @@ def clean_scalar(value, fallback=""):
         return fallback
     s = str(value).strip()
     return fallback if s in ("", "nan", "None", "NaT") else s
-
-
-def clean_numeric_text(value, fallback=""):
-    s = clean_scalar(value, fallback)
-    if s == fallback:
-        return fallback
-    try:
-        num = float(s)
-        if num.is_integer():
-            return str(int(num))
-    except Exception:
-        pass
-    return s
 
 
 def parse_date_value(value):
@@ -266,10 +229,7 @@ def apply_preset_to_session(project_title):
             elif key == "review_end":
                 st.session_state.date_end = parsed_date
         else:
-            if target_key in {"ra_caltrans_dist_n", "ra_fish_n", "ra_wqcb_n"}:
-                st.session_state[target_key] = clean_numeric_text(value, "")
-            else:
-                st.session_state[target_key] = clean_scalar(value, "")
+            st.session_state[target_key] = clean_scalar(value, "")
     if clean_scalar(preset.get("contact_name"), ""):
         st.session_state["contact_name"] = clean_scalar(preset.get("contact_name"), "")
     st.session_state["_loaded_project_title"] = project_title
@@ -1435,34 +1395,13 @@ def generate_pdf():
 
 # ── Generate button ───────────────────────────────────────────────────────────
 
-def validate_required_agency_numbers():
-    errors = []
-    if ra_caltrans_dist and not clean_scalar(ra_caltrans_dist_n, ""):
-        errors.append("Caltrans District Number is required when Caltrans District #n is checked.")
-    if ra_fish and not clean_scalar(ra_fish_n, ""):
-        errors.append("Fish & Game Region Number is required when Fish & Game Region #n is checked.")
-    if ra_wqcb and not clean_scalar(ra_wqcb_n, ""):
-        errors.append("Regional WQCB Number is required when Regional WQCB #n is checked.")
-    return errors
-
 if st.button("Generate PDF", type="primary", use_container_width=True):
-    validation_errors = validate_required_agency_numbers()
-    if validation_errors:
-        for msg in validation_errors:
-            st.error(msg)
-        st.stop()
-
     pdf_buffer = generate_pdf()
-    pdf_bytes = pdf_buffer.getvalue()
-    b64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-    st.success("PDF generated — download should begin automatically.")
-    auto_download_html = f"""
-        <a id="auto-download-link" href="data:application/pdf;base64,{b64_pdf}" download="notice_of_completion.pdf"></a>
-        <script>
-        const link = document.getElementById("auto-download-link");
-        if (link) {{
-            link.click();
-        }}
-        </script>
-    """
-    st.markdown(auto_download_html, unsafe_allow_html=True)
+    st.success("PDF generated — only checked items will appear in the document.")
+    st.download_button(
+        label="Download Notice of Completion PDF",
+        data=pdf_buffer,
+        file_name="notice_of_completion.pdf",
+        mime="application/pdf",
+        use_container_width=True,
+    )
