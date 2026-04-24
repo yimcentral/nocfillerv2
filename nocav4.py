@@ -67,10 +67,14 @@ DATE_FIELDS = {"review_start", "review_end"}
 
 HEADER_ALIASES = {
     "county": "county",
+    "projectcounty": "county",
     "project_county": "county",
     "city": "city",
+    "projectcity": "city",
     "project_city": "city",
     "zip": "zip",
+    "zipcode": "zip",
+    "projectzip": "zip",
     "project_zip": "zip",
     "latgpu": "lat_gpu",
     "latgpa": "lat_gpa",
@@ -98,6 +102,25 @@ HEADER_ALIASES = {
     "laappaddress": "la_app_address",
     "laappcsz": "la_app_csz",
     "laappphone": "la_app_phone",
+    # Reviewing agency number variants from ODS exports / hand-edited sheets.
+    "racaltransdistn": "ra_caltrans_dist_n",
+    "racaltransdistrictn": "ra_caltrans_dist_n",
+    "racaltransdistrictnumber": "ra_caltrans_dist_n",
+    "racaltransdistrictnum": "ra_caltrans_dist_n",
+    "racaltransdistnumber": "ra_caltrans_dist_n",
+    "rafishn": "ra_fish_n",
+    "rafishgameregionn": "ra_fish_n",
+    "rafishgameregionn": "ra_fish_n",
+    "rafishgameregionnumber": "ra_fish_n",
+    "rafishandgamen": "ra_fish_n",
+    "rafishandgameregionn": "ra_fish_n",
+    "rafishandgameregionnumber": "ra_fish_n",
+    "rawqcbn": "ra_wqcb_n",
+    "rarwqcbn": "ra_wqcb_n",
+    "raregionalwqcbn": "ra_wqcb_n",
+    "raregionalwqcbnumber": "ra_wqcb_n",
+    "raregionalrwqcbn": "ra_wqcb_n",
+    "raregionalrwqcbnumber": "ra_wqcb_n",
 }
 
 
@@ -129,6 +152,19 @@ def clean_scalar(value, fallback=""):
         return fallback
     s = str(value).strip()
     return fallback if s in ("", "nan", "None", "NaT") else s
+
+
+def clean_numeric_text(value, fallback=""):
+    s = clean_scalar(value, fallback)
+    if s == fallback:
+        return fallback
+    try:
+        num = float(s)
+        if num.is_integer():
+            return str(int(num))
+    except Exception:
+        pass
+    return s
 
 
 def parse_date_value(value):
@@ -230,7 +266,10 @@ def apply_preset_to_session(project_title):
             elif key == "review_end":
                 st.session_state.date_end = parsed_date
         else:
-            st.session_state[target_key] = clean_scalar(value, "")
+            if target_key in {"ra_caltrans_dist_n", "ra_fish_n", "ra_wqcb_n"}:
+                st.session_state[target_key] = clean_numeric_text(value, "")
+            else:
+                st.session_state[target_key] = clean_scalar(value, "")
     if clean_scalar(preset.get("contact_name"), ""):
         st.session_state["contact_name"] = clean_scalar(preset.get("contact_name"), "")
     st.session_state["_loaded_project_title"] = project_title
