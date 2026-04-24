@@ -1,12 +1,3 @@
-"""
-Notice of Completion & Environmental Document Transmittal
-Streamlit Generator - Full Form
-
-To run:
-    pip install streamlit reportlab
-    streamlit run nocav4.py
-"""
-
 import io
 import os
 import streamlit as st
@@ -200,6 +191,18 @@ def preset_date(preset, key):
     if not preset:
         return None
     return parse_date_value(preset.get(key))
+
+
+def hydrate_conditional_text(preset, key):
+    """Ensure conditional text inputs pick up ODS values when first shown."""
+    if not preset:
+        return
+    current = clean_scalar(st.session_state.get(key, ""), "")
+    if current:
+        return
+    preset_value = preset_val(preset, key, "")
+    if preset_value:
+        st.session_state[key] = preset_value
 
 FIELD_KEY_MAP = {
     "county": "project_county",
@@ -795,7 +798,8 @@ with col_l:
     ra_caltrans_dist = st.checkbox("Caltrans District #n", value=preset_bool(preset, "ra_caltrans_dist", True), key="ra_caltrans_dist")
     ra_caltrans_dist_n = ""
     if ra_caltrans_dist:
-        ra_caltrans_dist_n = st.text_input("Caltrans District Number", placeholder="e.g. 7", value=preset_val(preset, "ra_caltrans_dist_n"), key="ra_caltrans_dist_n")
+        hydrate_conditional_text(preset, "ra_caltrans_dist_n")
+        ra_caltrans_dist_n = st.text_input("Caltrans District Number", placeholder="e.g. 7", key="ra_caltrans_dist_n")
     ra_caltrans_aero = st.checkbox("Caltrans Division of Aeronautics", value=preset_bool(preset, "ra_caltrans_aero", False), key="ra_caltrans_aero")
     ra_caltrans_plan = st.checkbox("Caltrans Planning", value=preset_bool(preset, "ra_caltrans_plan", True), key="ra_caltrans_plan")
     ra_cvfpb = st.checkbox("Central Valley Flood Protection Board", value=preset_bool(preset, "ra_cvfpb", False), key="ra_cvfpb")
@@ -810,7 +814,8 @@ with col_l:
     ra_fish = st.checkbox("Fish & Game Region #n", value=preset_bool(preset, "ra_fish", True), key="ra_fish")
     ra_fish_n = ""
     if ra_fish:
-        ra_fish_n = st.text_input("Fish & Game Region Number", placeholder="e.g. 4", value=preset_val(preset, "ra_fish_n"), key="ra_fish_n")
+        hydrate_conditional_text(preset, "ra_fish_n")
+        ra_fish_n = st.text_input("Fish & Game Region Number", placeholder="e.g. 4", key="ra_fish_n")
     ra_food = st.checkbox("Food & Agriculture, Department of", value=preset_bool(preset, "ra_food", False), key="ra_food")
     ra_forestry = st.checkbox("Forestry and Fire Protection, Department of", value=preset_bool(preset, "ra_forestry", True), key="ra_forestry")
     ra_general_svc = st.checkbox("General Services, Department of", value=preset_bool(preset, "ra_general_svc", False), key="ra_general_svc")
@@ -827,7 +832,8 @@ with col_r:
     ra_wqcb = st.checkbox("Regional WQCB #n", value=preset_bool(preset, "ra_wqcb", True), key="ra_wqcb")
     ra_wqcb_n = ""
     if ra_wqcb:
-        ra_wqcb_n = st.text_input("Regional WQCB Number", placeholder="e.g. 5", value=preset_val(preset, "ra_wqcb_n"), key="ra_wqcb_n")
+        hydrate_conditional_text(preset, "ra_wqcb_n")
+        ra_wqcb_n = st.text_input("Regional WQCB Number", placeholder="e.g. 5", key="ra_wqcb_n")
     ra_resources = st.checkbox("Resources Agency", value=preset_bool(preset, "ra_resources", True), key="ra_resources")
     ra_recycling = st.checkbox("Resources Recycling and Recovery, Department of", value=preset_bool(preset, "ra_recycling", False), key="ra_recycling")
     ra_sfbay = st.checkbox("S.F. Bay Conservation & Development Comm.", value=preset_bool(preset, "ra_sfbay", False), key="ra_sfbay")
