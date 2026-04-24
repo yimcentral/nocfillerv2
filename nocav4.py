@@ -1,12 +1,3 @@
-"""
-Notice of Completion & Environmental Document Transmittal
-Streamlit Generator - Full Form
-
-To run:
-    pip install streamlit reportlab
-    streamlit run nocav4.py
-"""
-
 import io
 import os
 import streamlit as st
@@ -201,6 +192,18 @@ def preset_date(preset, key):
         return None
     return parse_date_value(preset.get(key))
 
+
+def hydrate_conditional_text(preset, key):
+    """Ensure conditional text inputs pick up ODS values when first shown."""
+    if not preset:
+        return
+    current = clean_scalar(st.session_state.get(key, ""), "")
+    if current:
+        return
+    preset_value = preset_val(preset, key, "")
+    if preset_value:
+        st.session_state[key] = preset_value
+
 FIELD_KEY_MAP = {
     "county": "project_county",
     "city": "project_city",
@@ -215,40 +218,24 @@ def apply_preset_to_session(project_title):
     if not project_title:
         st.session_state["_loaded_project_title"] = ""
         return {}
-
-    changed = False
     for key, value in preset.items():
         if key == "project_title":
             continue
         target_key = FIELD_KEY_MAP.get(key, key)
         if key in BOOLEAN_FIELDS:
-            new_value = parse_bool(value, False)
+            st.session_state[target_key] = parse_bool(value, False)
         elif key in DATE_FIELDS:
-            new_value = parse_date_value(value)
+            parsed_date = parse_date_value(value)
+            st.session_state[target_key] = parsed_date
+            if key == "review_start":
+                st.session_state.date_start = parsed_date
+            elif key == "review_end":
+                st.session_state.date_end = parsed_date
         else:
-            new_value = clean_scalar(value, "")
-
-        if st.session_state.get(target_key) != new_value:
-            st.session_state[target_key] = new_value
-            changed = True
-
-        if key == "review_start" and st.session_state.get("date_start") != new_value:
-            st.session_state.date_start = new_value
-            changed = True
-        elif key == "review_end" and st.session_state.get("date_end") != new_value:
-            st.session_state.date_end = new_value
-            changed = True
-
-    contact_name_value = clean_scalar(preset.get("contact_name"), "")
-    if contact_name_value and st.session_state.get("contact_name") != contact_name_value:
-        st.session_state["contact_name"] = contact_name_value
-        changed = True
-
+            st.session_state[target_key] = clean_scalar(value, "")
+    if clean_scalar(preset.get("contact_name"), ""):
+        st.session_state["contact_name"] = clean_scalar(preset.get("contact_name"), "")
     st.session_state["_loaded_project_title"] = project_title
-    if changed and not st.session_state.get("_preset_rerun_done"):
-        st.session_state["_preset_rerun_done"] = True
-        st.rerun()
-    st.session_state["_preset_rerun_done"] = False
     return preset
 
 
@@ -811,7 +798,7 @@ with col_l:
     ra_caltrans_dist = st.checkbox("Caltrans District #n", value=preset_bool(preset, "ra_caltrans_dist", True), key="ra_caltrans_dist")
     ra_caltrans_dist_n = ""
     if ra_caltrans_dist:
-        ra_caltrans_dist_n = st.text_input("Caltrans District Number", placeholder="e.g. 7", key="ra_caltrans_dist_n")
+        ra_caltrans_dist_n = st.text_input("Caltrans District Number", placeholder="e.g. 7", value=preset_val(preset, "ra_caltrans_dist_n"), key="ra_caltrans_dist_n")
     ra_caltrans_aero = st.checkbox("Caltrans Division of Aeronautics", value=preset_bool(preset, "ra_caltrans_aero", False), key="ra_caltrans_aero")
     ra_caltrans_plan = st.checkbox("Caltrans Planning", value=preset_bool(preset, "ra_caltrans_plan", True), key="ra_caltrans_plan")
     ra_cvfpb = st.checkbox("Central Valley Flood Protection Board", value=preset_bool(preset, "ra_cvfpb", False), key="ra_cvfpb")
@@ -826,7 +813,7 @@ with col_l:
     ra_fish = st.checkbox("Fish & Game Region #n", value=preset_bool(preset, "ra_fish", True), key="ra_fish")
     ra_fish_n = ""
     if ra_fish:
-        ra_fish_n = st.text_input("Fish & Game Region Number", placeholder="e.g. 4", key="ra_fish_n")
+        ra_fish_n = st.text_input("Fish & Game Region Number", placeholder="e.g. 4", value=preset_val(preset, "ra_fish_n"), key="ra_fish_n")
     ra_food = st.checkbox("Food & Agriculture, Department of", value=preset_bool(preset, "ra_food", False), key="ra_food")
     ra_forestry = st.checkbox("Forestry and Fire Protection, Department of", value=preset_bool(preset, "ra_forestry", True), key="ra_forestry")
     ra_general_svc = st.checkbox("General Services, Department of", value=preset_bool(preset, "ra_general_svc", False), key="ra_general_svc")
@@ -843,7 +830,7 @@ with col_r:
     ra_wqcb = st.checkbox("Regional WQCB #n", value=preset_bool(preset, "ra_wqcb", True), key="ra_wqcb")
     ra_wqcb_n = ""
     if ra_wqcb:
-        ra_wqcb_n = st.text_input("Regional WQCB Number", placeholder="e.g. 5", key="ra_wqcb_n")
+        ra_wqcb_n = st.text_input("Regional WQCB Number", placeholder="e.g. 5", value=preset_val(preset, "ra_wqcb_n"), key="ra_wqcb_n")
     ra_resources = st.checkbox("Resources Agency", value=preset_bool(preset, "ra_resources", True), key="ra_resources")
     ra_recycling = st.checkbox("Resources Recycling and Recovery, Department of", value=preset_bool(preset, "ra_recycling", False), key="ra_recycling")
     ra_sfbay = st.checkbox("S.F. Bay Conservation & Development Comm.", value=preset_bool(preset, "ra_sfbay", False), key="ra_sfbay")
