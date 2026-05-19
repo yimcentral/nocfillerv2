@@ -19,7 +19,7 @@ LOGO_PATH = "cec_logo.png"
 # ── Prepopulated data ─────────────────────────────────────────────────────────
 
 CONTACTS = {
-    "Lisa Worrall": "916-661-8367",
+    "Lisa Sample": "916-661-8367",
     "Eric Veerkamp": "916-555-0202",
     "Renee Longman": "916-937-3538",
     "Ali Jahani": "916-555-0404",
